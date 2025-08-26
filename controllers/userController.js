@@ -698,6 +698,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
       },
       include: { role: true },
     });
+    console.log("existingUser", existingUser);
 
     // 2. If found locally → generate OTP & send email
     if (existingUser) {
@@ -777,13 +778,13 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
         message: "OTP sent successfully.  Please check your registered email.",
       });
     }
-
+    console.log("first");
     // 3. If not found locally → check external API
     const response = await axios.post(
       `${BASE_URL_LTSIMEMBER}/form/ltsi-send-otp`,
       { ltsiNo }
     );
-
+    console.log("response", response.data);
     if (response.data?.status) {
       // external API already handles OTP generation + email
       return res.status(200).json({
@@ -791,10 +792,10 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
         message: "OTP sent successfully. Please check your registered email.",
       });
     }
-    return res.status(404).json({
-      status: false,
-      message: "You are not registered with us. Please sign up first.",
-    });
+    // return res.status(404).json({
+    //   status: false,
+    //   message: "You are not registered with us. Please sign up first.",
+    // });
   } catch (err) {
     console.error("loginWithLtsiNumberSendOtp error:", err.message || err);
     return res.status(500).json({

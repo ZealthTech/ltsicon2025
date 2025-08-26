@@ -11,7 +11,7 @@ user.post("/signup-form", USER.signupForm);
 user.post("/login-email-send-otp", USER.loginwithEmailSendOtp);
 user.post("/login-email-otp-verify", USER.loginwithEmailOtpVerify);
 
-user.post("/login-email-send-otp", USER.loginwithLtsiNumberSendOtp);
-user.post("/login-email-otp-verify", USER.loginwithLtsiNumberOtpVerify);
+user.post("/login-ltsinumber-send-otp", USER.loginwithLtsiNumberSendOtp);
+user.post("/login-ltsinumber-otp-verify", USER.loginwithLtsiNumberOtpVerify);
 
 module.exports = user;
