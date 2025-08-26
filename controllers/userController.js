@@ -780,22 +780,34 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
     }
     console.log("first");
     // 3. If not found locally → check external API
-    const response = await axios.post(
-      `${BASE_URL_LTSIMEMBER}/form/ltsi-send-otp`,
-      { ltsiNo }
-    );
-    console.log("response", response.data);
-    if (response.data?.status) {
-      // external API already handles OTP generation + email
-      return res.status(200).json({
-        status: true,
-        message: "OTP sent successfully. Please check your registered email.",
+    try {
+      const response = await axios.post(
+        `${BASE_URL_LTSIMEMBER}/form/ltsi-send-otp`,
+        { ltsiNo },
+        { validateStatus: () => true }
+      );
+      console.log("response", response.data);
+      if (response.data?.status) {
+        return res.status(200).json({
+          status: true,
+          message:
+            "OTP sent successfully (from external DB). Please check your registered email.",
+        });
+      } else {
+        return res.status(404).json({
+          status: false,
+          message:
+            response.data?.message ||
+            "You are not registered with us. Please sign up first.",
+        });
+      }
+    } catch (apiErr) {
+      console.error("External API error:", apiErr.message || apiErr);
+      return res.status(502).json({
+        status: false,
+        message: "Failed to send OTP.",
       });
     }
-    // return res.status(404).json({
-    //   status: false,
-    //   message: "You are not registered with us. Please sign up first.",
-    // });
   } catch (err) {
     console.error("loginWithLtsiNumberSendOtp error:", err.message || err);
     return res.status(500).json({
@@ -884,41 +896,63 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
         },
       });
     }
-
-    // 3. If not found locally → verify OTP from external API
-    const response = await axios.post(
-      `${BASE_URL_LTSIMEMBER}/form/ltsi-verify-otp`,
-      { ltsiNo, otp }
-    );
-
-    if (response.data?.status) {
-      // Assume external API verified and returns user info
-      const externalUser = response.data.user || {};
-
-      const token = jwt.sign(
-        { email: externalUser.email, ltsiNo },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
+    try {
+      // 3. If not found locally → verify OTP from external API
+      const response = await axios.post(
+        `${BASE_URL_LTSIMEMBER}/form/ltsi-verify-otp`,
+        { ltsiNo, otp },
+        { validateStatus: () => true } //  don't throw on 404/500
       );
 
-      return res.status(200).json({
-        status: true,
-        message: "OTP verified successfully.",
-        token,
-        user: {
-          email: externalUser.email,
-          firstName: externalUser.firstName,
-          lastName: externalUser.lastName,
-          ltsiNo,
-          roleId,
-        },
+      console.log(
+        "External OTP verify response:",
+        response.status,
+        response.data
+      );
+
+      if (response.status === 200 && response.data?.status) {
+        // ✅ OTP verified by external API
+        const externalUser = response.data.user || {};
+
+        const token = jwt.sign(
+          { email: externalUser.email, ltsiNo },
+          process.env.JWT_SECRET,
+          { expiresIn: "1d" }
+        );
+
+        return res.status(200).json({
+          status: true,
+          message: "OTP verified successfully.",
+          token,
+          user: {
+            email: externalUser.email,
+            firstName: externalUser.firstName,
+            lastName: externalUser.lastName,
+            ltsiNo,
+            roleId,
+          },
+        });
+      }
+
+      if (response.status === 404) {
+        return res.status(404).json({
+          status: false,
+          message:
+            response.data?.message || "User not found in external system.",
+        });
+      }
+
+      return res.status(400).json({
+        status: false,
+        message: response.data?.message || "Invalid or expired OTP.",
+      });
+    } catch (apiErr) {
+      console.error("External API error (verify):", apiErr.message || apiErr);
+      return res.status(502).json({
+        status: false,
+        message: "Failed to verify OTP. Please try again later.",
       });
     }
-
-    return res.status(400).json({
-      status: false,
-      message: "Invalid or expired OTP.",
-    });
   } catch (err) {
     console.error("loginWithLtsiNumberOtpVerify error:", err.message || err);
     return res.status(500).json({
