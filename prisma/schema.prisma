@@ -20,7 +20,7 @@ model User {
   title                String?   @db.VarChar(50)
   firstName            String?   @db.VarChar(255)
   lastName             String?   @db.VarChar(255)
-  email                String   @db.VarChar(100)
+  email                String    @db.VarChar(100)
   phone                String?   @db.VarChar(15)
   password             String?   @db.VarChar(255)
   otp                  Int?      @db.Int
@@ -32,6 +32,8 @@ model User {
   gender               String?   @db.VarChar(50)
   country              String?   @db.VarChar(100)
   status               Int       @db.Int
+  token                String?   @db.VarChar(1000)
+  lastLogin            DateTime?
   createdOn            DateTime  @default(now()) @db.Timestamp(0)
 
   // Role FK (already present)
@@ -44,12 +46,11 @@ model User {
   bookingDetails BookingDetail[]
   bookings       Booking[]
 
-  @@map("users")
-
   // Practical indexes (safe with existing data)
   @@index([status])
   @@index([roleId])
   @@index([lastName, firstName])
+  @@map("users")
 }
 
 model WorkShop {
@@ -60,9 +61,9 @@ model WorkShop {
   status     Int      @db.Int
   createdOn  DateTime @default(now()) @db.Timestamp(0)
 
-  @@map("workShop")
   @@index([status])
   @@index([sequence])
+  @@map("workShop")
 }
 
 model Title {
@@ -71,9 +72,9 @@ model Title {
   sequence Int    @db.Int
   status   Int    @db.Int
 
-  @@map("title")
   @@index([status])
   @@index([sequence])
+  @@map("title")
 }
 
 model SpecialityDepartment {
@@ -83,9 +84,9 @@ model SpecialityDepartment {
   status                   Int      @db.Int
   createdOn                DateTime @default(now()) @db.Timestamp(0)
 
-  @@map("specialityDepartment")
   @@index([status])
   @@index([sequence])
+  @@map("specialityDepartment")
 }
 
 model InvitedMember {
@@ -96,8 +97,8 @@ model InvitedMember {
   nights    Int      @db.Int
   createdOn DateTime @default(now()) @db.DateTime(0)
 
-  @@map("invited_member")
   @@index([email])
+  @@map("invited_member")
 }
 
 model Event {
@@ -106,7 +107,7 @@ model Event {
   eventDate   DateTime @db.Date
   filter      String   @db.VarChar(50)
   title       String   @db.VarChar(500)
-  descip      String   @db.VarChar(500)   // kept to match DB column name
+  descip      String   @db.VarChar(500) // kept to match DB column name
   dateRange   String   @db.VarChar(500)
   venue       String   @db.VarChar(500)
   noOfPeople  Int      @db.Int
@@ -115,10 +116,9 @@ model Event {
   longdesc    String   @db.VarChar(1000)
   banner      String   @db.VarChar(500)
 
-
-  @@map("events")
   @@index([eventDate])
   @@index([filter])
+  @@map("events")
 }
 
 model Employment {
@@ -131,9 +131,9 @@ model Employment {
 
   user User @relation(fields: [userId], references: [userId], map: "fk_employment_user")
 
-  @@map("employment")
   @@index([userId])
   @@index([createdOn])
+  @@map("employment")
 }
 
 model ConferenceFees {
@@ -141,33 +141,33 @@ model ConferenceFees {
   memberType   String   @db.VarChar(255)
   fee          Int      @db.Int
   sequence     Int      @db.Int
-  status       Int      @db.Int        // 1 = active, 0 = inactive
+  status       Int      @db.Int // 1 = active, 0 = inactive
   createdOn    DateTime @default(now()) @db.Timestamp(0)
 
-  @@map("conferenceFees")         // map to existing table name
   @@index([status])
   @@index([sequence])
   @@index([memberType])
+  @@map("conferenceFees") // map to existing table name
 }
 
 model Booking {
-  bookingId               Int      @id @default(autoincrement())
-  bookingNumber           String   @db.VarChar(255)
-  userId                  Int
-  memberType              String?  @db.VarChar(255)
-  memberTypeFee           String?  @default("0") @db.VarChar(11)
-  accompanyingPersonName  String?  @db.VarChar(255)
-  accompanyingPersonfee   String?  @default("0") @db.VarChar(50)
-  accommodation           String?  @db.VarChar(255)
-  accommodationFee        String?  @default("0") @db.VarChar(11)
-  checkin                 String?  @db.VarChar(100)
-  checkout                String?  @db.VarChar(100)
-  nights                  String   @default("0") @db.VarChar(11)
-  totalPayment            Int?     @default(0) @db.Int
-  screenShot              String?  @db.Text
-  status                  Int      @default(0) @db.Int // 0: pending, 1: active, 2: rejected
-  createdOn               DateTime @default(now()) @db.Timestamp(0)
-  updatedOn               DateTime? @db.Timestamp(0)
+  bookingId              Int       @id @default(autoincrement())
+  bookingNumber          String    @db.VarChar(255)
+  userId                 Int
+  memberType             String?   @db.VarChar(255)
+  memberTypeFee          String?   @default("0") @db.VarChar(11)
+  accompanyingPersonName String?   @db.VarChar(255)
+  accompanyingPersonfee  String?   @default("0") @db.VarChar(50)
+  accommodation          String?   @db.VarChar(255)
+  accommodationFee       String?   @default("0") @db.VarChar(11)
+  checkin                String?   @db.VarChar(100)
+  checkout               String?   @db.VarChar(100)
+  nights                 String    @default("0") @db.VarChar(11)
+  totalPayment           Int?      @default(0) @db.Int
+  screenShot             String?   @db.Text
+  status                 Int       @default(0) @db.Int // 0: pending, 1: active, 2: rejected
+  createdOn              DateTime  @default(now()) @db.Timestamp(0)
+  updatedOn              DateTime? @db.Timestamp(0)
 
   // Relation to User (already present)
   user User @relation(fields: [userId], references: [userId], map: "fk_bookings_user")
@@ -175,9 +175,9 @@ model Booking {
   // Reverse relation
   bookingDetails BookingDetail[]
 
-  @@map("bookings")
   @@index([userId])
   @@index([status])
+  @@map("bookings")
 }
 
 model BookingDetail {
@@ -191,53 +191,53 @@ model BookingDetail {
   booking Booking @relation(fields: [bookingId], references: [bookingId], map: "fk_bookingDetail_booking")
   user    User    @relation(fields: [userId], references: [userId], map: "fk_bookingDetail_user")
 
-  @@map("bookingDetail")
   @@index([bookingId])
   @@index([userId])
+  @@map("bookingDetail")
 }
 
 model AccommodationCharges {
   accommodationId   Int      @id @default(autoincrement())
   accommodationType String   @db.VarChar(255)
-  charge            String   @db.VarChar(255)   // per night (stored as text in DB)
-  price             String?  @db.VarChar(255)   // stored as text in DB
+  charge            String   @db.VarChar(255) // per night (stored as text in DB)
+  price             String?  @db.VarChar(255) // stored as text in DB
   sequence          Int      @db.Int
-  status            Int      @db.Int            // 1 = active, 0 = inactive
+  status            Int      @db.Int // 1 = active, 0 = inactive
   createdOn         DateTime @default(now()) @db.Timestamp(0)
 
-  @@map("accommodationCharges")
   @@index([status])
   @@index([sequence])
   @@index([accommodationType])
+  @@map("accommodationCharges")
 }
 
 model AbsTheme {
   themeId   Int    @id @default(autoincrement())
   themeName String @db.VarChar(255)
-  status    Int    @default(1) @db.Int   // 1 = Active, 0 = Inactive
+  status    Int    @default(1) @db.Int // 1 = Active, 0 = Inactive
   sequence  Int    @default(0) @db.Int
 
-  @@map("abs_theme")
   @@index([status])
   @@index([sequence])
+  @@map("abs_theme")
 }
 
 model AbsSubmission {
-  submissionId          Int      @id @default(autoincrement())
-  userId                Int?     
-  abstractSubmissionId  String?  @db.VarChar(255)
-  categoryId            String   @db.VarChar(200)
-  subCategoryId         String?  @db.VarChar(255)
-  themeName             String?  @db.VarChar(255)
-  abstractTitle         String   @db.VarChar(255)
-  abstractDetail        String?  @db.LongText
-  keywords              String?  @db.Text
-  video                 String?  @db.VarChar(255)
-  filedoc               String?  @db.VarChar(255)
-  IsConflictofInterest  Int?     @default(0) @db.Int  // 1 = yes, 0 = no
-  message               String?  @db.Text
-  status                Int?     @default(0) @db.Int  // 0 = Draft, 1 = Submitted, 2 = Rejected, 3 = Accepted
-  createdOn             DateTime @default(now()) @db.DateTime(0)
+  submissionId         Int      @id @default(autoincrement())
+  userId               Int?
+  abstractSubmissionId String?  @db.VarChar(255)
+  categoryId           String   @db.VarChar(200)
+  subCategoryId        String?  @db.VarChar(255)
+  themeName            String?  @db.VarChar(255)
+  abstractTitle        String   @db.VarChar(255)
+  abstractDetail       String?  @db.LongText
+  keywords             String?  @db.Text
+  video                String?  @db.VarChar(255)
+  filedoc              String?  @db.VarChar(255)
+  IsConflictofInterest Int?     @default(0) @db.Int // 1 = yes, 0 = no
+  message              String?  @db.Text
+  status               Int?     @default(0) @db.Int // 0 = Draft, 1 = Submitted, 2 = Rejected, 3 = Accepted
+  createdOn            DateTime @default(now()) @db.DateTime(0)
 
   // Relation to User (already present)
   user User? @relation(fields: [userId], references: [userId], map: "fk_abs_submission_user")
@@ -245,10 +245,10 @@ model AbsSubmission {
   // Reverse relation
   authors AbsAuthor[]
 
-  @@map("abs_submission")
   @@index([userId])
   @@index([status])
   @@index([categoryId])
+  @@map("abs_submission")
 }
 
 model AbsSubCategory {
@@ -261,56 +261,57 @@ model AbsSubCategory {
   // Relation: each subcategory belongs to a category
   category AbsCategory @relation(fields: [catId], references: [id], map: "fk_abs_subcategory_category")
 
-  @@map("abs_subcategory")
   @@index([catId])
   @@index([status])
   @@index([sequence])
+  @@map("abs_subcategory")
 }
 
 model AbsCategory {
-  id        Int       @id @default(autoincrement())
-  category  String    @db.VarChar(255)  // category name
-  status    Int       @default(1) @db.Int   // 1 = active, 0 = inactive
-  sequence  Int       @default(0) @db.Int
-  createdOn DateTime  @default(now()) @db.DateTime(0)
+  id        Int      @id @default(autoincrement())
+  category  String   @db.VarChar(255) // category name
+  status    Int      @default(1) @db.Int // 1 = active, 0 = inactive
+  sequence  Int      @default(0) @db.Int
+  createdOn DateTime @default(now()) @db.DateTime(0)
 
   // Relation: one category can have many subcategories
   subcategories AbsSubCategory[]
 
-  @@map("abs_category")
   @@index([status])
   @@index([sequence])
+  @@map("abs_category")
 }
 
 model AbsAuthor {
-  authorId            Int       @id @default(autoincrement())
+  authorId            Int      @id @default(autoincrement())
   submissionId        Int?
-  title               String    @db.VarChar(255)
-  firstName           String    @db.VarChar(200)
-  lastName            String?   @db.VarChar(200)
-  designation         String?   @db.VarChar(255)
-  institution         String?   @db.VarChar(255)
-  country             String?   @db.VarChar(200)
-  phone               String?   @db.VarChar(15)
-  email               String?   @db.VarChar(100)
-  isPresentingAuthor  String?   @db.VarChar(10)   // usually "yes"/"no"
-  correspondingAuthor String?   @db.VarChar(10)   // usually "yes"/"no"
-  status              Int       @default(1) @db.Int // 1 = active, 0 = inactive
-  createdOn           DateTime  @default(now()) @db.DateTime(0)
+  title               String   @db.VarChar(255)
+  firstName           String   @db.VarChar(200)
+  lastName            String?  @db.VarChar(200)
+  designation         String?  @db.VarChar(255)
+  institution         String?  @db.VarChar(255)
+  country             String?  @db.VarChar(200)
+  phone               String?  @db.VarChar(15)
+  email               String?  @db.VarChar(100)
+  isPresentingAuthor  String?  @db.VarChar(10) // usually "yes"/"no"
+  correspondingAuthor String?  @db.VarChar(10) // usually "yes"/"no"
+  status              Int      @default(1) @db.Int // 1 = active, 0 = inactive
+  createdOn           DateTime @default(now()) @db.DateTime(0)
 
   // Relation: each author belongs to one submission
   submission AbsSubmission? @relation(fields: [submissionId], references: [submissionId], map: "fk_abs_author_submission")
 
-  @@map("abs_author")
   @@index([submissionId])
   @@index([status])
+  @@map("abs_author")
 }
+
 model Country {
-  id       Int     @id @default(autoincrement()) @db.Int
-  name     String  @db.VarChar(100)
-  code     String  @db.VarChar(5)
-  sequence Int?    @db.Int
-  status   Int     @default(1) @db.Int // 1 = active, 0 = inactive
+  id       Int    @id @default(autoincrement()) @db.Int
+  name     String @db.VarChar(100)
+  code     String @db.VarChar(5)
+  sequence Int?   @db.Int
+  status   Int    @default(1) @db.Int // 1 = active, 0 = inactive
 
   @@map("countries")
 }
