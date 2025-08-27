@@ -323,7 +323,12 @@ const signupForm = async (req, res) => {
         message: "User not found.",
       });
     }
-
+    console.log("user", user);
+    const token = jwt.sign(
+      { email: user.email, roleId: user.roleId },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
     // 3. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -337,6 +342,7 @@ const signupForm = async (req, res) => {
         phone,
         status: 1,
         isLTSI: "No",
+        token,
         password: hashedPassword,
       },
       include: { role: true },
@@ -428,12 +434,15 @@ const signupForm = async (req, res) => {
       status: true,
       message: "Sign up completed successfully.",
       user: {
-        id: updatedUser.userId,
+        userId: updatedUser.userId,
         email: updatedUser.email,
         role: updatedUser.role?.name || null,
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
         phone: updatedUser.phone,
+        token,
+        roleId: updatedUser.role?.id || null,
+        status: updatedUser.status,
       },
     });
   } catch (err) {
@@ -630,6 +639,10 @@ const loginwithEmailOtpVerify = async (req, res) => {
         userId: user.userId,
         email: email,
         role: user.role?.name || null,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        roleId: user.roleId,
       },
       JWT_SECRET,
       { expiresIn: "7d" } // token valid for 7 days
@@ -789,8 +802,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
       if (response.data?.status) {
         return res.status(200).json({
           status: true,
-          message:
-            "OTP sent successfully (from external DB). Please check your registered email.",
+          message: "OTP sent successfully. Please check your registered email.",
         });
       } else {
         return res.status(401).json({
@@ -825,22 +837,20 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
       });
     }
 
-    const { email, ltsiNo, otp, roleId } = req.body;
+    const { ltsiNo, otp } = req.body;
 
     // Basic validation
-    if (!email || !ltsiNo || !otp || !roleId) {
+    if (!ltsiNo || !otp) {
       return res.status(400).json({
         status: false,
-        message: "Email, LTSI number, OTP and roleId are required",
+        message: "LTSI number and OTP are required",
       });
     }
 
     // 1. Try to find user in local DB
     const user = await prisma.user.findFirst({
       where: {
-        email,
         LTSINumber: ltsiNo,
-        roleId: Number(roleId),
         status: 1,
       },
       include: { role: true },
@@ -914,7 +924,14 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
         const externalUser = response.data.user || {};
 
         const token = jwt.sign(
-          { email: externalUser.email, ltsiNo },
+          {
+            email: externalUser.email,
+            ltsiNo,
+            roleId: externalUser.roleId,
+            firstName: externalUser.firstName,
+            lastName: externalUser.lastName,
+            phone: externalUser.phone,
+          },
           process.env.JWT_SECRET,
           { expiresIn: "1d" }
         );
@@ -932,7 +949,11 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
 
           if (!specialityDept) {
             specialityDept = await prisma.specialityDepartment.create({
-              data: { specialityDepartmentName: externalUser.speciality, sequence:1,  status:1, },
+              data: {
+                specialityDepartmentName: externalUser.speciality,
+                sequence: 1,
+                status: 1,
+              },
             });
           }
         }
@@ -952,7 +973,6 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             isLTSI: "Yes",
             LTSINumber: externalUser.ltsiNo,
             token,
-            roleId: Number(roleId),
           },
           create: {
             email: externalUser.email,
@@ -968,7 +988,6 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             isLTSI: "Yes",
             LTSINumber: externalUser.ltsiNo,
             token,
-            roleId: Number(roleId),
           },
           include: { role: true },
         });
@@ -992,7 +1011,6 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             token,
             ltsiNo: savedUser.LTSINumber,
             role: savedUser.role?.name || "USER",
-            roleId: savedUser.roleId,
           },
         });
       }
