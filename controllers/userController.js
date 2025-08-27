@@ -57,7 +57,7 @@ const signupSendOtp = async (req, res) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "User already exists. Please login instead.",
       });
@@ -79,7 +79,7 @@ const signupSendOtp = async (req, res) => {
     }
     // 3. Save new user with OTP + role
     const newUser = await prisma.user.upsert({
-      where: {  email },
+      where: { email },
       update: {
         otp: Number(otp),
         otpExpiry,
@@ -226,7 +226,7 @@ const signupOtpVerify = async (req, res) => {
     });
 
     if (!user || user.otp !== Number(otp)) {
-      return res.status(400).json({
+      return res.status(401).json({
         status: false,
         message: "Invalid OTP",
       });
@@ -234,7 +234,7 @@ const signupOtpVerify = async (req, res) => {
 
     // 3. Validate expiry
     if (new Date() > user.otpExpiry) {
-      return res.status(400).json({
+      return res.status(401).json({
         status: false,
         message: "OTP expired. Please request a new one.",
       });
@@ -305,7 +305,7 @@ const signupForm = async (req, res) => {
     }
 
     if (password !== confirmPassword) {
-      return res.status(400).json({
+      return res.status(401).json({
         status: false,
         message: "Passwords do not match",
       });
@@ -318,7 +318,7 @@ const signupForm = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({
+      return res.status(401).json({
         status: false,
         message: "User not found.",
       });
@@ -474,7 +474,7 @@ const loginwithEmailSendOtp = async (req, res) => {
     });
 
     if (!existingUser) {
-      return res.status(404).json({
+      return res.status(401).json({
         status: false,
         message: "You are not registered with us. Please sign up first.",
       });
@@ -603,7 +603,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({
+      return res.status(401).json({
         status: false,
         message: "User not found",
       });
@@ -611,7 +611,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
 
     // 3. Validate OTP
     if (user.otp !== Number(otp)) {
-      return res.status(400).json({
+      return res.status(401).json({
         status: false,
         message: "Invalid OTP",
       });
@@ -619,7 +619,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
 
     // 4. Validate expiry
     if (!user.otpExpiry || new Date() > user.otpExpiry) {
-      return res.status(400).json({
+      return res.status(401).json({
         status: false,
         message: "OTP expired. Please request a new one.",
       });
@@ -793,7 +793,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
             "OTP sent successfully (from external DB). Please check your registered email.",
         });
       } else {
-        return res.status(404).json({
+        return res.status(401).json({
           status: false,
           message:
             response.data?.message ||
@@ -849,14 +849,14 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
     // 2. If found locally → verify OTP from DB
     if (user) {
       if (user.otp !== Number(otp)) {
-        return res.status(400).json({
+        return res.status(401).json({
           status: false,
           message: "Invalid OTP",
         });
       }
 
       if (!user.otpExpiry || new Date() > user.otpExpiry) {
-        return res.status(400).json({
+        return res.status(401).json({
           status: false,
           message: "OTP expired. Please request a new one.",
         });
@@ -881,7 +881,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
         message: "OTP verified successfully.",
         token,
         user: {
-          id: updatedUser.userId,
+          userId: updatedUser.userId,
           email: updatedUser.email,
           title: updatedUser.title,
           firstName: updatedUser.firstName,
@@ -900,7 +900,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
       const response = await axios.post(
         `${BASE_URL_LTSIMEMBER}/form/ltsi-verify-otp`,
         { ltsiNo, otp },
-        { validateStatus: () => true } //  don't throw on 404/500
+        { validateStatus: () => true } // don’t throw on 404/500
       );
 
       console.log(
@@ -910,7 +910,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
       );
 
       if (response.status === 200 && response.data?.status) {
-        // ✅ OTP verified by external API
+        // OTP verified by external API
         const externalUser = response.data.user || {};
 
         const token = jwt.sign(
@@ -919,29 +919,93 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
           { expiresIn: "1d" }
         );
 
+        let specialityDept = null;
+
+        if (externalUser.speciality) {
+          specialityDept = await prisma.specialityDepartment.findFirst({
+            where: {
+              specialityDepartmentName: {
+                equals: externalUser.speciality,
+              },
+            },
+          });
+
+          if (!specialityDept) {
+            specialityDept = await prisma.specialityDepartment.create({
+              data: { specialityDepartmentName: externalUser.speciality, sequence:1,  status:1, },
+            });
+          }
+        }
+        // Save/Update user in your local DB
+        const savedUser = await prisma.user.upsert({
+          where: { email: externalUser.email }, // unique field
+          update: {
+            title: externalUser.title,
+            firstName: externalUser.firstName,
+            lastName: externalUser.lastName,
+            phone: externalUser.phone,
+            status: externalUser.status ?? 1,
+            gender: externalUser.gender,
+            country: externalUser.country,
+            medicalCouncilNumber: externalUser.medicalCouncilNumber,
+            specialityDepartment: externalUser.speciality,
+            isLTSI: "Yes",
+            LTSINumber: externalUser.ltsiNo,
+            token,
+            roleId: Number(roleId),
+          },
+          create: {
+            email: externalUser.email,
+            title: externalUser.title,
+            firstName: externalUser.firstName,
+            lastName: externalUser.lastName,
+            phone: externalUser.phone,
+            status: externalUser.status ?? 1,
+            gender: externalUser.gender,
+            country: externalUser.country,
+            medicalCouncilNumber: externalUser.medicalCouncilNumber,
+            specialityDepartment: externalUser.speciality,
+            isLTSI: "Yes",
+            LTSINumber: externalUser.ltsiNo,
+            token,
+            roleId: Number(roleId),
+          },
+          include: { role: true },
+        });
+
         return res.status(200).json({
           status: true,
           message: "OTP verified successfully.",
-          token,
           user: {
-            email: externalUser.email,
-            firstName: externalUser.firstName,
-            lastName: externalUser.lastName,
-            ltsiNo,
-            roleId,
+            userId: savedUser.userId,
+            email: savedUser.email,
+            title: savedUser.title,
+            firstName: savedUser.firstName,
+            lastName: savedUser.lastName,
+            phone: savedUser.phone,
+            status: savedUser.status,
+            gender: savedUser.gender,
+            country: savedUser.country,
+            medicalCouncilNumber: savedUser.medicalCouncilNumber,
+            speciality: savedUser.specialityDepartment,
+            isLTSI: "Yes",
+            token,
+            ltsiNo: savedUser.LTSINumber,
+            role: savedUser.role?.name || "USER",
+            roleId: savedUser.roleId,
           },
         });
       }
 
       if (response.status === 404) {
-        return res.status(404).json({
+        return res.status(401).json({
           status: false,
           message:
             response.data?.message || "User not found in external system.",
         });
       }
 
-      return res.status(400).json({
+      return res.status(401).json({
         status: false,
         message: response.data?.message || "Invalid or expired OTP.",
       });
