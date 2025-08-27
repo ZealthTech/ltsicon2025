@@ -476,7 +476,6 @@ const loginwithEmailSendOtp = async (req, res) => {
     const existingUser = await prisma.user.findFirst({
       where: {
         status: 1,
-        roleId: Number(roleId),
         email,
       },
       include: { role: true },
@@ -705,7 +704,6 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
     const existingUser = await prisma.user.findFirst({
       where: {
         status: 1,
-        roleId: Number(roleId),
         LTSINumber: ltsiNo,
       },
       include: { role: true },
