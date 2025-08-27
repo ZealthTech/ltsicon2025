@@ -20,7 +20,7 @@ model User {
   title                String?   @db.VarChar(50)
   firstName            String?   @db.VarChar(255)
   lastName             String?   @db.VarChar(255)
-  email                String    @db.VarChar(100)
+  email                String    @db.VarChar(100) @unique
   phone                String?   @db.VarChar(15)
   password             String?   @db.VarChar(255)
   otp                  Int?      @db.Int

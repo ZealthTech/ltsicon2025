@@ -77,10 +77,9 @@ const signupSendOtp = async (req, res) => {
         message: "Invalid roleId. Role does not exist.",
       });
     }
-
     // 3. Save new user with OTP + role
     const newUser = await prisma.user.upsert({
-      where: { email },
+      where: {  email },
       update: {
         otp: Number(otp),
         otpExpiry,
