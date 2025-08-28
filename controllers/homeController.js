@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
 const homepage = async (req, res) => {
   try {
@@ -26,16 +27,27 @@ const homepage = async (req, res) => {
     }
 
     //  Fetch banners
-    const banners = await prisma.banner.findMany({
+    const bannerss = await prisma.banner.findMany({
       where: { status: 1 },
       orderBy: { sequence: "asc" },
     });
 
-    //  Fetch news
-    const news = await prisma.news.findMany({
+    // Add baseURL only when sending response
+    const banners = bannerss.map((b) => ({
+      ...b,
+      bannerImage: b.bannerImage ? `${BASE_URL_IMG}${b.bannerImage}` : null,
+    }));
+
+    // Fetch news
+    const newss = await prisma.news.findMany({
       where: { status: 1 },
       orderBy: { createdOn: "desc" },
     });
+
+    const news = newss.map((n) => ({
+      ...n,
+      newsImage: n.newsImage ? `${BASE_URL_IMG}${n.newsImage}` : null,
+    }));
 
     //  Check registrations
     const registrations = await prisma.booking.findMany({
@@ -49,6 +61,7 @@ const homepage = async (req, res) => {
       isRegistration: registrations.length > 0 ? 1 : 0,
       list: registrations,
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon1.png",
+      label: "Registration",
     };
 
     // Check abstracts
@@ -59,6 +72,7 @@ const homepage = async (req, res) => {
       isAbstractSubmission: abstracts.length > 0 ? 1 : 0,
       list: abstracts,
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon2.png",
+      label: "Abstract Submission",
     };
 
     //  Check workshops
@@ -73,15 +87,19 @@ const homepage = async (req, res) => {
       isWorkshop: workshopsList.length > 0 ? 1 : 0,
       list: workshopsList,
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon1.png",
+      label: "Workshop",
     };
     const allSessionsObj = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon2.png",
+      label: "All Sessions",
     };
     const albumObj = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon1.png",
+      label: "Photo Album",
     };
     const speakersObj = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon2.png",
+      label: "Faculty & Speakers",
     };
 
     //  Final unified response

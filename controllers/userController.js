@@ -1,12 +1,13 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const axios = require("axios");
+const path = require("path");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const nodemailer = require("nodemailer");
-const moment = require("moment");
+const { downloadImage } = require("../middleware/download");
 const BASE_URL = process.env.BASE_URL;
 const LOGO = `${BASE_URL}/public/Logo.png`;
 const FROM_MAIL = process.env.FROM_MAIL;
@@ -15,6 +16,8 @@ const MAIL_PASS = process.env.MAIL_PASS;
 const SUPPORT_MAIL = process.env.SUPPORT_MAIL;
 const MAIL_BCC = process.env.MAIL_BCC;
 const BASE_URL_LTSIMEMBER = process.env.BASE_URL_LTSIMEMBER;
+const BASE_URL_IMG_LTSIMEMBER = process.env.BASE_URL_IMG_LTSIMEMBER;
+const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
 function generateOtp() {
   return Math.floor(1000 + Math.random() * 9000).toString();
@@ -786,7 +789,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
       return res.status(200).json({
         status: true,
         message: "OTP sent successfully.  Please check your registered email.",
-        data:otp
+        data: otp,
       });
     }
     console.log("first");
@@ -896,6 +899,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
           firstName: updatedUser.firstName,
           lastName: updatedUser.lastName,
           phone: updatedUser.phone,
+          profileImage: `${BASE_URL_IMG}${updatedUser.profileImage}`,
           status: updatedUser.status,
           isLTSI: updatedUser.isLTSI,
           token: token,
@@ -921,6 +925,17 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
       if (response.status === 200 && response.data?.status) {
         // OTP verified by external API
         const externalUser = response.data.user || {};
+        console.log("externalUser", externalUser);
+
+        let localProfileImage = null;
+        if (externalUser.profileImage) {
+          const fullImageUrl = `${BASE_URL_IMG_LTSIMEMBER}${externalUser.profileImage}`;
+
+          localProfileImage = await downloadImage(
+            fullImageUrl,
+            externalUser.email
+          );
+        }
 
         const token = jwt.sign(
           {
@@ -956,6 +971,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             });
           }
         }
+        console.log("alallala");
         // Save/Update user in your local DB
         const savedUser = await prisma.user.upsert({
           where: { email: externalUser.email }, // unique field
@@ -964,6 +980,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             firstName: externalUser.firstName,
             lastName: externalUser.lastName,
             phone: externalUser.phone,
+            profileImage: localProfileImage,
             status: externalUser.status ?? 1,
             gender: externalUser.gender,
             country: externalUser.country,
@@ -979,6 +996,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             firstName: externalUser.firstName,
             lastName: externalUser.lastName,
             phone: externalUser.phone,
+            profileImage: localProfileImage,
             status: externalUser.status ?? 1,
             gender: externalUser.gender,
             country: externalUser.country,
@@ -990,7 +1008,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
           },
           include: { role: true },
         });
-
+        console.log("saveddd", savedUser);
         return res.status(200).json({
           status: true,
           message: "OTP verified successfully.",
@@ -1001,6 +1019,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             firstName: savedUser.firstName,
             lastName: savedUser.lastName,
             phone: savedUser.phone,
+            profileImage: `${BASE_URL_IMG}${localProfileImage}`,
             status: savedUser.status,
             gender: savedUser.gender,
             country: savedUser.country,
