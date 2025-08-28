@@ -63,7 +63,6 @@ const homepage = async (req, res) => {
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon1.png",
       label: "Registration",
     };
-
     // Check abstracts
     const abstracts = await prisma.absSubmission.findMany({
       where: { userId: Number(userId) },
@@ -74,7 +73,6 @@ const homepage = async (req, res) => {
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon2.png",
       label: "Abstract Submission",
     };
-
     //  Check workshops
     const bookingsWithWorkshops = await prisma.booking.findMany({
       where: { userId: Number(userId) },
@@ -102,6 +100,15 @@ const homepage = async (req, res) => {
       label: "Faculty & Speakers",
     };
 
+    const sections = [
+      registrationObj,
+      abstractObj,
+      workshopObj,
+      allSessionsObj,
+      albumObj,
+      speakersObj,
+    ];
+
     //  Final unified response
     return res.status(200).json({
       status: true,
@@ -110,12 +117,7 @@ const homepage = async (req, res) => {
         user,
         banners,
         news,
-        registration: registrationObj,
-        abstractSubmission: abstractObj,
-        workshop: workshopObj,
-        allSessionsObj,
-        albumObj,
-        speakersObj,
+        sections,
       },
     });
   } catch (error) {
