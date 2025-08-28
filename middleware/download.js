@@ -7,7 +7,7 @@ async function downloadImage(imageUrl, userEmail) {
     const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
 
     // Define storage folder (make sure it exists)
-    const uploadDir = path.join(__dirname, "uploads", "profileImages");
+    const uploadDir = path.join(__dirname,".." ,"uploads", "profileImages");
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
