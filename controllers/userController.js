@@ -786,6 +786,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
       return res.status(200).json({
         status: true,
         message: "OTP sent successfully.  Please check your registered email.",
+        data:otp
       });
     }
     console.log("first");
