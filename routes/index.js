@@ -4,6 +4,7 @@ const test = require("./testRoute");
 const utility = require("./utilityRoute");
 const home = require("./homeRoute");
 const banner = require("./bannerRoute");
+const registration = require("./registrationRoute");
 const news = require("./newsRoute");
 const router = express.Router();
 
@@ -13,5 +14,6 @@ router.use("/utility", utility); // Handle /user routes
 router.use("/home", home); // Handle /user routes
 router.use("/banner", banner); // Handle /user routes
 router.use("/news", news); // Handle /user routes
+router.use("/registration", registration); // Handle /user routes
 
 module.exports = router;

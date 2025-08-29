@@ -257,7 +257,7 @@ const signupOtpVerify = async (req, res) => {
       status: true,
       message: "OTP verified successfully.",
       user: {
-        id: updatedUser.userId,
+        userId: updatedUser.userId,
         email: updatedUser.email,
         role: updatedUser.role?.name || null,
         roleId: updatedUser.role?.id || null,
@@ -664,7 +664,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
       status: true,
       message: "OTP verified successfully. You are now logged in.",
       user: {
-        id: updatedUser.userId,
+        userId: updatedUser.userId,
         email: updatedUser.email,
         title: updatedUser.title,
         firstName: updatedUser.firstName,
