@@ -805,6 +805,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
         return res.status(200).json({
           status: true,
           message: "OTP sent successfully. Please check your registered email.",
+          otp: response.data.otp, // for testing only
         });
       } else {
         return res.status(401).json({
@@ -1008,6 +1009,34 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
           },
           include: { role: true },
         });
+        let employment = await prisma.employment.findFirst({
+          where: { userId: savedUser.userId },
+        });
+
+        if (employment) {
+          // update using employmentId (the PK)
+          employment = await prisma.employment.update({
+            where: { employmentId: employment.employmentId },
+            data: {
+              designation: externalUser.currentEmployment.position,
+              hospitalName: externalUser.currentEmployment.institution,
+              hospitalAddress: "",
+              createdOn: new Date(), // maybe use updatedOn instead if you add one
+            },
+          });
+        } else {
+          // create new employment
+          employment = await prisma.employment.create({
+            data: {
+              userId: Number(savedUser.userId),
+              designation: externalUser.currentEmployment.position,
+              hospitalName: externalUser.currentEmployment.institution,
+              hospitalAddress: "",
+              createdOn: new Date(),
+            },
+          });
+        }
+
         console.log("saveddd", savedUser);
         return res.status(200).json({
           status: true,
