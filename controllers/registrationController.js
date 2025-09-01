@@ -575,19 +575,20 @@ const allInfo = async (req, res) => {
         .json({ status: false, message: "Method Not Allowed" });
     }
 
-    const { userId } = req.body;
+    const { userId, bookingId } = req.body;
 
-    if (!userId) {
+    if (!userId || !bookingId) {
       return res
         .status(400)
-        .json({ status: false, message: "userId is required" });
+        .json({ status: false, message: "userId and bookingId are required" });
     }
 
-    // Fetch user with all related data
+    // Fetch user and filter bookings by bookingId
     const userData = await prisma.user.findUnique({
       where: { userId: Number(userId) },
       include: {
         bookings: {
+          where: { bookingId: Number(bookingId) }, // filter here
           include: {
             bookingDetails: true, // workshops
           },
@@ -598,6 +599,13 @@ const allInfo = async (req, res) => {
 
     if (!userData) {
       return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    // Optional: If user exists but bookingId doesn't exist
+    if (userData.bookings.length === 0) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Booking not found for this user" });
     }
 
     return res.status(200).json({
@@ -612,6 +620,7 @@ const allInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
+
 
 module.exports = {
   personalInfo,

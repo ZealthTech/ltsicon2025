@@ -20,7 +20,7 @@ REGISTRATION.post(
 );
 REGISTRATION.post(
   "/upload-workshop-info",
-  // JWT.verifyToken([3]),
+  JWT.verifyToken([3]),
   form.workshopInfo
 );
 REGISTRATION.post(
@@ -28,6 +28,6 @@ REGISTRATION.post(
   JWT.verifyToken([3]),
   form.accomodationInfo
 );
-REGISTRATION.post("/all-info", JWT.verifyToken([3]), form.allInfo);
+REGISTRATION.post("/all-info", form.allInfo);
 
 module.exports = REGISTRATION;
