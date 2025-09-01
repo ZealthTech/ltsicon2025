@@ -385,7 +385,7 @@ const workshopInfo = async (req, res) => {
       return res.status(401).json({ status: false, message: "User not found" });
 
     // 3. Booking check
-    const booking = await prisma.booking.findFirst({
+    let booking = await prisma.booking.findFirst({
       where: { userId: Number(userId) },
     });
     if (!booking)
@@ -405,17 +405,20 @@ const workshopInfo = async (req, res) => {
       });
     }
 
-    // 5. Insert workshops if array not empty
+    // 5. Insert workshops
     const bookingNumber = await generateBookingNumber();
     let insertedWorkshops = [];
+    let totalWorkshopFee = 0;
+
     if (bookingId && bookingId > 0) {
+      // Existing bookingId provided
       if (workshops.length > 0) {
         insertedWorkshops = await Promise.all(
           workshops.map(({ name, fee }) =>
             prisma.bookingDetail.create({
               data: {
                 user: { connect: { userId: booking.userId } },
-                booking: { connect: { bookingId: bookingId } },
+                booking: { connect: { bookingId: Number(bookingId) } },
                 workshop: name,
                 workshopFee: Number(fee),
               },
@@ -424,21 +427,16 @@ const workshopInfo = async (req, res) => {
         );
       }
     } else {
+      // No bookingId -> create new booking first
       if (workshops.length > 0) {
         booking = await prisma.booking.create({
           data: {
             userId: Number(userId),
-            bookingNumber: bookingNumber, // unique booking number
+            bookingNumber,
             createdOn: new Date(),
           },
         });
-        // 1. Calculate total workshop fee
-        const totalWorkshopFee = workshops.reduce(
-          (sum, { fee }) => sum + Number(fee || 0),
-          0
-        );
 
-        // 2. Insert workshops
         insertedWorkshops = await Promise.all(
           workshops.map(({ name, fee }) =>
             prisma.bookingDetail.create({
@@ -452,18 +450,30 @@ const workshopInfo = async (req, res) => {
           )
         );
 
-        // 3. You now have insertedWorkshops AND totalWorkshopFee
-        console.log("Total Workshop Fee:", totalWorkshopFee);
+        // 6. Calculate total workshop fee
+         totalWorkshopFee = workshops.reduce(
+          (sum, { fee }) => sum + Number(fee || 0),
+          0
+        );
+
+        // 7. Update booking table with totalPayment
+        booking = await prisma.booking.update({
+          where: { bookingId: booking.bookingId },
+          data: {
+            totalPayment: Number(totalWorkshopFee), // assuming `totalPayment` column exists
+          },
+        });
       }
     }
-    // 6. Response
+
+    // 7. Response
     return res.status(200).json({
       status: true,
       message:
         insertedWorkshops.length > 0
           ? "Workshop(s) added successfully"
           : "No workshops provided",
-      data: insertedWorkshops,
+      data: { insertedWorkshops, totalWorkshopFee },
     });
   } catch (err) {
     console.error("Workshop info error:", err.message || err);
@@ -472,6 +482,7 @@ const workshopInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
+
 const accomodationInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
