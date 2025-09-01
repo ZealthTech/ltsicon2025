@@ -20,7 +20,7 @@ REGISTRATION.post(
 );
 REGISTRATION.post(
   "/upload-workshop-info",
-  JWT.verifyToken([3]),
+  // JWT.verifyToken([3]),
   form.workshopInfo
 );
 REGISTRATION.post(

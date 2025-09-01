@@ -2,7 +2,6 @@ require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-
 const countryList = async (req, res) => {
   try {
     const countries = [
@@ -214,10 +213,10 @@ const countryList = async (req, res) => {
 
 const speciality = async (req, res) => {
   try {
-  const specialityList = await prisma.specialityDepartment.findMany({
+    const specialityList = await prisma.specialityDepartment.findMany({
       orderBy: { specialityDepartmentName: "asc" },
     });
-    
+
     res.json({ success: true, data: specialityList });
   } catch (error) {
     res
@@ -231,54 +230,70 @@ const title = async (req, res) => {
     const titles = await prisma.title.findMany({
       orderBy: { name: "asc" },
     });
-    
+
     res.json({ success: true, data: titles });
   } catch (error) {
     res
       .status(500)
       .json({ success: false, message: "Error fetching Titles", error });
   }
-}
+};
 const accomodation = async (req, res) => {
   try {
     const accomodationList = await prisma.accommodationCharges.findMany({
       orderBy: { accommodationType: "asc" },
     });
-    
+
     res.json({ success: true, data: accomodationList });
   } catch (error) {
     res
       .status(500)
       .json({ success: false, message: "Error fetching Accomodations", error });
   }
-}
+};
 const conferenceFees = async (req, res) => {
   try {
     const feesList = await prisma.conferenceFees.findMany({
       orderBy: { memberType: "asc" },
     });
-    
-    res.json({ success: true, data: feesList });
+
+    // separate out accompanying person
+    const accompanyingPerson = feesList.find(
+      (fee) => fee.memberType.toLowerCase() === "accompanying person"
+    );
+
+    // all other fees
+    const otherFees = feesList.filter(
+      (fee) => fee.memberType.toLowerCase() !== "accompanying person"
+    );
+
+    res.json({
+      success: true,
+      data: {
+        fees: otherFees,
+        accompanyingPerson,
+      },
+    });
   } catch (error) {
     res
       .status(500)
       .json({ success: false, message: "Error fetching fees", error });
   }
-}
+};
+
 const workshop = async (req, res) => {
   try {
     const workShopList = await prisma.workShop.findMany({
       orderBy: { workShop: "asc" },
     });
-    
+
     res.json({ success: true, data: workShopList });
   } catch (error) {
     res
       .status(500)
       .json({ success: false, message: "Error fetching workshop", error });
   }
-}
-
+};
 
 module.exports = {
   countryList,
@@ -286,5 +301,5 @@ module.exports = {
   accomodation,
   title,
   conferenceFees,
-  workshop
+  workshop,
 };
