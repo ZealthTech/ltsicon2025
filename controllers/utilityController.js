@@ -210,7 +210,6 @@ const countryList = async (req, res) => {
       .json({ success: false, message: "Error fetching countries", error });
   }
 };
-
 const speciality = async (req, res) => {
   try {
     const specialityList = await prisma.specialityDepartment.findMany({
@@ -224,7 +223,6 @@ const speciality = async (req, res) => {
       .json({ success: false, message: "Error fetching speciality", error });
   }
 };
-
 const title = async (req, res) => {
   try {
     const titles = await prisma.title.findMany({
@@ -280,7 +278,6 @@ const conferenceFees = async (req, res) => {
       .json({ success: false, message: "Error fetching fees", error });
   }
 };
-
 const workshop = async (req, res) => {
   try {
     const workShopList = await prisma.workShop.findMany({
@@ -294,6 +291,32 @@ const workshop = async (req, res) => {
       .json({ success: false, message: "Error fetching workshop", error });
   }
 };
+const abstractTheme = async (req, res) => {
+  try {
+    const themeList = await prisma.absTheme.findMany({
+      orderBy: { themeName: "asc" },
+    });
+
+    res.json({ success: true, data: themeList });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching theme", error });
+  }
+};
+const abstractCategory = async (req, res) => {
+  try {
+    const category = await prisma.absCategory.findMany({
+      orderBy: { category: "asc" },
+    });
+
+    res.json({ success: true, data: category });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Error fetching category", error });
+  }
+};
 
 module.exports = {
   countryList,
@@ -302,4 +325,6 @@ module.exports = {
   title,
   conferenceFees,
   workshop,
+  abstractTheme,
+  abstractCategory,
 };

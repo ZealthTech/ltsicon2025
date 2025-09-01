@@ -28,6 +28,7 @@ app.use('/uploads/bannerImages', express.static('uploads/bannerImages'));
 app.use('/uploads/newsImages', express.static('uploads/newsImages'));
 app.use('/uploads/profileImages', express.static('uploads/profileImages'));
 app.use('/uploads/icons', express.static('uploads/icons'));
+app.use('/uploads/abstractFiles', express.static('uploads/abstractFiles'));
 // Set Content-Type headers based on file extensions
 const contentTypeMap = {
   ".js": "application/javascript",

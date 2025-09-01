@@ -451,7 +451,7 @@ const workshopInfo = async (req, res) => {
         );
 
         // 6. Calculate total workshop fee
-         totalWorkshopFee = workshops.reduce(
+        totalWorkshopFee = workshops.reduce(
           (sum, { fee }) => sum + Number(fee || 0),
           0
         );
@@ -482,7 +482,6 @@ const workshopInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
-
 const accomodationInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -493,6 +492,7 @@ const accomodationInfo = async (req, res) => {
 
     const {
       userId,
+      bookingId,
       accommodation,
       accommodationFee,
       checkin,
@@ -514,38 +514,51 @@ const accomodationInfo = async (req, res) => {
       where: { userId: Number(userId) },
     });
     if (!user) {
-      return res.status(401).json({ status: false, message: "User not found" });
+      return res.status(404).json({ status: false, message: "User not found" });
     }
 
-    // 3. Check if booking exists for this user
-    const booking = await prisma.booking.findFirst({
-      where: { userId: Number(userId) },
-    });
-    if (!booking) {
-      return res
-        .status(400)
-        .json({ status: false, message: "No booking found for this user" });
-    }
+    // 3. If bookingId is 0 or not provided → create new accommodation
+    if (!bookingId || bookingId === 0) {
+      const bookingNumber = await generateBookingNumber();
 
-    // 4. Check if memberType and memberTypeFee exist
-    if (
-      !booking.memberType ||
-      !booking.memberTypeFee ||
-      booking.memberTypeFee === "0"
-    ) {
-      return res.status(400).json({
-        status: false,
-        message: "Pay conference fee first to choose accomodation",
+      const newBooking = await prisma.booking.create({
+        data: {
+          userId: Number(userId),
+          accommodation,
+          accommodationFee,
+          bookingNumber,
+          checkin,
+          checkout,
+          nights,
+          totalPayment: Number(totalPayment),
+          createdOn: new Date(),
+        },
+      });
+
+      return res.status(200).json({
+        status: true,
+        message: "Accommodation added successfully",
+        data: newBooking,
       });
     }
-    const bookingNumber = await generateBookingNumber();
-    // 5. Add workshop in bookingDetails
-    const newBooking = await prisma.booking.create({
+
+    // 4. If bookingId exists → update existing accommodation
+    const existingBooking = await prisma.booking.findUnique({
+      where: { bookingId: Number(bookingId) },
+    });
+
+    if (!existingBooking) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found for this bookingId",
+      });
+    }
+
+    const updatedBooking = await prisma.booking.update({
+      where: { bookingId: Number(bookingId) },
       data: {
-        userId: Number(userId),
         accommodation,
         accommodationFee,
-        bookingNumber,
         checkin,
         checkout,
         nights,
@@ -554,19 +567,19 @@ const accomodationInfo = async (req, res) => {
       },
     });
 
-    // 6. Return response
     return res.status(200).json({
       status: true,
-      message: "Accomodation added successfully",
-      data: newBooking,
+      message: "Accommodation updated successfully",
+      data: updatedBooking,
     });
   } catch (err) {
-    console.error("Accomodation info error:", err.message || err);
+    console.error("Accommodation info error:", err.message || err);
     return res
       .status(500)
       .json({ status: false, message: "Internal Server Error" });
   }
 };
+
 const allInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -620,7 +633,62 @@ const allInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
+const conferenceRegistrationInfo = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res
+        .status(405)
+        .json({ status: false, message: "Method Not Allowed" });
+    }
 
+    const { userId, bookingId } = req.body;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ status: false, message: "userId is required" });
+    }
+
+    // Fetch user and filter bookings by bookingId
+    const userData = await prisma.user.findFirst({
+      where: {
+        userId: Number(userId),
+        status: 1,
+      },
+      include: {
+        bookings: {
+          where: { status: 1 },
+          include: {
+            bookingDetails: true, // workshops
+          },
+        },
+        employments: true, // professional info
+      },
+    });
+
+    if (!userData) {
+      return res.status(404).json({ status: false, message: "User not found" });
+    }
+
+    // Optional: If user exists but bookingId doesn't exist
+    if (userData.bookings.length === 0) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Booking not found for this user" });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "All user data fetched successfully",
+      data: userData,
+    });
+  } catch (err) {
+    console.error("AllInfo API error:", err.message || err);
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal Server Error" });
+  }
+};
 
 module.exports = {
   personalInfo,
@@ -629,4 +697,5 @@ module.exports = {
   workshopInfo,
   accomodationInfo,
   allInfo,
+  conferenceRegistrationInfo,
 };

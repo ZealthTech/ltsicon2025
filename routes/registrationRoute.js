@@ -28,6 +28,11 @@ REGISTRATION.post(
   JWT.verifyToken([3]),
   form.accomodationInfo
 );
-REGISTRATION.post("/all-info", form.allInfo);
+REGISTRATION.post("/all-info",  form.allInfo);
+REGISTRATION.post(
+  "/conference-registration-info",
+  JWT.verifyToken([3]),
+  form.conferenceRegistrationInfo
+);
 
 module.exports = REGISTRATION;

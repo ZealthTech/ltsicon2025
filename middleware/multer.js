@@ -9,6 +9,7 @@ const generateFolderPath = (fieldname) => {
   const folderMap = {
     bannerImage: "bannerImages",
     newsImage: "newsImages",
+    abstractFiles: "abstractFiles",
   };
 
   return path.join(baseUploadDir, folderMap[fieldname] || "others");
@@ -23,15 +24,26 @@ const createFolderIfNeeded = (folderPath) => {
 
 // Shared allowed file types
 const allowedTypes = [
+  // Images
   "image/jpeg",
   "image/png",
   "image/jpg",
   "image/avif",
   "image/webp",
   "image/gif",
+
+  // Documents
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+
+  // Videos
+  "video/mp4",
+  "video/quicktime", // .mov
+  "video/x-msvideo", // .avi
+  "video/x-matroska", // .mkv
+  "video/webm",
+  "video/mpeg",
 ];
 
 // Factory function to create multer uploaders dynamically
@@ -73,8 +85,10 @@ const bannerImageUpload = createUploader([
   { name: "bannerImage", maxCount: 1 },
 ]);
 const newsImageUpload = createUploader([{ name: "newsImage", maxCount: 1 }]);
+const abstractUpload = createUploader([{ name: "abstractFile", maxCount: 1 }]);
 
 module.exports = {
   bannerImageUpload,
   newsImageUpload,
+  abstractUpload,
 };

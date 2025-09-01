@@ -57,6 +57,7 @@ model User {
 model WorkShop {
   workShopId Int      @id @default(autoincrement())
   workShop   String   @db.VarChar(255)
+  link       String?  @db.VarChar(500)
   fee        Int      @db.Int
   sequence   Int      @db.Int
   status     Int      @db.Int
@@ -235,8 +236,10 @@ model AbsSubmission {
   keywords             String?  @db.Text
   video                String?  @db.VarChar(255)
   filedoc              String?  @db.VarChar(255)
+  abstractFile         String?  @db.VarChar(255)
   IsConflictofInterest Int?     @default(0) @db.Int // 1 = yes, 0 = no
   message              String?  @db.Text
+  submissionStatus     String?  @db.VarChar(5)
   status               Int?     @default(0) @db.Int // 0 = Draft, 1 = Submitted, 2 = Rejected, 3 = Accepted
   createdOn            DateTime @default(now()) @db.DateTime(0)
 
