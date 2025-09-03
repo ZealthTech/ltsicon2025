@@ -1,6 +1,25 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const BASE_URL_IMG = process.env.BASE_URL_IMG;
+
+const generateAbstractSubmissionId = async () => {
+  let absId;
+  let exists = true;
+
+  while (exists) {
+    // Generate a 4-digit random number (1000–9999)
+    const number = Math.floor(1000 + Math.random() * 9000);
+    absId = `ABS${number}`;
+
+    // Check uniqueness in DB
+    exists = await prisma.absSubmission.findFirst({
+      where: { abstractSubmissionId: absId }, // adjust field name
+    });
+  }
+
+  return absId;
+};
 
 const uploadAbstract = async (req, res) => {
   try {
@@ -11,7 +30,7 @@ const uploadAbstract = async (req, res) => {
     }
 
     const {
-      submissionId, // for updating draft
+      submissionId,
       userId,
       categoryId,
       subCategoryId,
@@ -22,11 +41,10 @@ const uploadAbstract = async (req, res) => {
       authorDetails,
       IsConflictofInterest,
       message,
-      abstractFile, // single file for PDF/image/video
       submissionStatus, // "DRAFT" or "SAVE"
     } = req.body;
 
-    // 1. Validation
+    // Validation for required fields
     if (
       !userId ||
       !categoryId ||
@@ -36,14 +54,14 @@ const uploadAbstract = async (req, res) => {
       !keywords ||
       !authorDetails ||
       !submissionStatus ||
-      !IsConflictofInterest
+      IsConflictofInterest === undefined
     ) {
-      return res.status(400).json({
-        status: false,
-        message: "All fields are required.",
-      });
+      return res
+        .status(400)
+        .json({ status: false, message: "All fields are required." });
     }
-    // 2. Abstract word count (max 300 words)
+
+    // Abstract word count check
     const wordCount = abstractDetail.trim().split(/\s+/).length;
     if (wordCount > 300) {
       return res.status(400).json({
@@ -52,7 +70,7 @@ const uploadAbstract = async (req, res) => {
       });
     }
 
-    // 3. Keywords validation (max 5)
+    // Keywords validation (max 5)
     const keywordArray = keywords
       .split(",")
       .map((k) => k.trim())
@@ -63,115 +81,157 @@ const uploadAbstract = async (req, res) => {
         .json({ status: false, message: "Maximum of 5 keywords allowed." });
     }
 
-    // 4. File type validation (PDF/Image/Video)
-    const allowedExtensions = [
-      ".pdf",
-      ".jpg",
-      ".jpeg",
-      ".png",
-      ".gif",
-      ".mp4",
-      ".mov",
-      ".avi",
-      ".mkv",
-      ".webm",
-    ];
-    const fileExt = abstractFile
-      ? abstractFile.substring(abstractFile.lastIndexOf(".")).toLowerCase()
-      : "";
-
-    console.log("fileExt11", fileExt);
-    if (!allowedExtensions.includes(fileExt)) {
-      return res.status(400).json({
-        status: false,
-        message:
-          "Only PDF, image, or video files are allowed for abstractFile.",
-      });
-    }
-    console.log("fileExt", fileExt);
-    const themeName = await prisma.absTheme.findUnique({
+    // Fetch category name
+    const categoryNameObject = await prisma.absCategory.findUnique({
+      where: { id: Number(categoryId) },
+      select: { category: true },
+    });
+    const categoryName = categoryNameObject
+      ? categoryNameObject.category
+      : null;
+    // Fetch theme name
+    const themeNameObject = await prisma.absTheme.findUnique({
       where: { themeId: Number(themeId) },
       select: { themeName: true },
     });
-    // 5. Create new submission or update draft
+    const themeName = themeNameObject ? themeNameObject.themeName : null;
+
+    // Handle file path
+    const absolutePath = req.files.abstractFile[0].path;
+    const relativePath = absolutePath.split("uploads")[1].replace(/\\/g, "/");
+    const abstractFilePath = `${BASE_URL_IMG}/uploads${relativePath}`;
+
+    // Parse author details
+    let parsedAuthors = [];
+    try {
+      parsedAuthors =
+        typeof authorDetails === "string"
+          ? JSON.parse(authorDetails)
+          : authorDetails;
+    } catch (e) {
+      console.error("Failed to parse authorDetails:", e, authorDetails);
+      return res.status(400).json({
+        status: false,
+        message: "Invalid authorDetails format",
+      });
+    }
+
+    if (!Array.isArray(parsedAuthors) || parsedAuthors.length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "At least one author is required.",
+      });
+    }
+
     let submission;
 
-    if (submissionId && submissionStatus === "DRAFT") {
-      // Update existing draft
-      submission = await prisma.absSubmission.update({
+    if (submissionId) {
+      // Existing submission (draft or draft->save)
+      const existingSubmission = await prisma.absSubmission.findUnique({
         where: { submissionId: Number(submissionId) },
-        data: {
-          userId: Number(userId),
-          categoryId,
-          subCategoryId,
-          themeName,
-          abstractTitle,
-          abstractDetail,
-          keywords: keywordArray.join(","),
-          abstractFile,
-          IsConflictofInterest: Number(IsConflictofInterest) || 0,
-          message,
-          submissionStatus,
-          status: 0, // draft
-          createdOn: new Date(),
-        },
       });
 
-      // Delete old authors and re-insert
-      await prisma.absAuthor.deleteMany({
-        where: { submissionId: submission.submissionId },
-      });
-      await prisma.absAuthor.createMany({
-        data: authorDetails.map((a) => ({
-          submissionId: submission.submissionId,
-          title: a.title,
-          firstName: a.firstName,
-          lastName: a.lastName,
-          designation: a.designation,
-          institution: a.institution,
-          country: a.country,
-          phone: a.phone,
-          email: a.email,
-          isPresentingAuthor: a.isPresentingAuthor,
-          correspondingAuthor: a.correspondingAuthor,
-          status: 1,
-        })),
+      if (!existingSubmission) {
+        return res.status(404).json({
+          status: false,
+          message: "Submission not found.",
+        });
+      }
+
+      // Generate abstractSubmissionId if not already set
+      const abstractSubmissionId =
+        existingSubmission.abstractSubmissionId ||
+        (await generateAbstractSubmissionId());
+
+      // Update submission
+      submission = await prisma.$transaction(async (prisma) => {
+        const updatedSub = await prisma.absSubmission.update({
+          where: { submissionId: Number(submissionId) },
+          data: {
+            userId: Number(userId),
+            categoryId: categoryName,
+            subCategoryId,
+            themeName,
+            abstractSubmissionId,
+            abstractTitle,
+            abstractDetail,
+            keywords: keywordArray.join(","),
+            abstractFile: abstractFilePath,
+            IsConflictofInterest: Number(IsConflictofInterest) || 0,
+            message,
+            submissionStatus,
+            status: submissionStatus === "SAVE" ? 1 : 0,
+            createdOn: new Date(),
+          },
+          include: {
+            authors: true,
+          },
+        });
+
+        // Delete old authors
+        await prisma.absAuthor.deleteMany({
+          where: { submissionId: updatedSub.submissionId },
+        });
+
+        // Insert authors
+        await prisma.absAuthor.createMany({
+          data: parsedAuthors.map((a) => ({
+            submissionId: updatedSub.submissionId,
+            title: a.title,
+            firstName: a.firstName,
+            lastName: a.lastName,
+            designation: a.designation,
+            institution: a.institution,
+            country: a.country,
+            phone: a.phone,
+            email: a.email,
+            isPresentingAuthor: a.isPresentingAuthor,
+            correspondingAuthor: a.correspondingAuthor,
+            status: 1,
+          })),
+        });
+
+        return updatedSub;
       });
     } else {
-      // New submission or final save
+      // New submission (either draft or save)
+      const abstractSubmissionId = await generateAbstractSubmissionId();
+
       submission = await prisma.absSubmission.create({
         data: {
           userId: Number(userId),
-          categoryId,
+          categoryId: categoryName,
           subCategoryId,
           themeName,
+          abstractSubmissionId,
           abstractTitle,
           abstractDetail,
           keywords: keywordArray.join(","),
-          abstractFile,
+          abstractFile: abstractFilePath,
           IsConflictofInterest: Number(IsConflictofInterest) || 0,
           message,
           submissionStatus,
           status: submissionStatus === "SAVE" ? 1 : 0,
           createdOn: new Date(),
+          authors: {
+            create: parsedAuthors.map((a) => ({
+              title: a.title,
+              firstName: a.firstName,
+              lastName: a.lastName,
+              designation: a.designation,
+              institution: a.institution,
+              country: a.country,
+              phone: a.phone,
+              email: a.email,
+              isPresentingAuthor: a.isPresentingAuthor,
+              correspondingAuthor: a.correspondingAuthor,
+              status: 1,
+            })),
+          },
         },
-      });
-
-      await prisma.absAuthor.createMany({
-        data: authorDetails.map((a) => ({
-          submissionId: submission.submissionId,
-          title: a.title,
-          firstName: a.firstName,
-          lastName: a.lastName,
-          designation: a.designation,
-          institution: a.institution,
-          country: a.country,
-          phone: a.phone,
-          email: a.email,
-          isPresentingAuthor: a.isPresentingAuthor,
-          correspondingAuthor: a.correspondingAuthor,
-          status: 1,
-        })),
+        include: {
+          authors: true, // <- this ensures the returned submission object includes all authors
+        },
       });
     }
 

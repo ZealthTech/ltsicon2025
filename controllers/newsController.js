@@ -27,7 +27,7 @@ const newsUpload = async (req, res) => {
     const absolutePath = req.files.newsImage[0].path;
     // Convert to relative path starting from "uploads"
     const relativePath = absolutePath.split("uploads")[1].replace(/\\/g, "/");
-    const newsImagePath = `/uploads${relativePath}`;
+    const newsImagePath = `${BASE_URL_IMG}/uploads${relativePath}`;
     console.log("newsImagePath", newsImagePath);
 
     // Save in database

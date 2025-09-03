@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
 const bannerUpload = async (req, res) => {
   try {
@@ -27,7 +28,7 @@ const bannerUpload = async (req, res) => {
     const absolutePath = req.files.bannerImage[0].path;
     // Convert to relative path starting from "uploads"
     const relativePath = absolutePath.split("uploads")[1].replace(/\\/g, "/");
-    const bannerImagePath = `/uploads${relativePath}`;
+    const bannerImagePath = `${BASE_URL_IMG}/uploads${relativePath}`;
     console.log("banner", bannerImagePath);
     // Save in database
     const banner = await prisma.banner.create({

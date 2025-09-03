@@ -9,7 +9,7 @@ const generateFolderPath = (fieldname) => {
   const folderMap = {
     bannerImage: "bannerImages",
     newsImage: "newsImages",
-    abstractFiles: "abstractFiles",
+    abstractFile: "abstractFiles",
   };
 
   return path.join(baseUploadDir, folderMap[fieldname] || "others");
