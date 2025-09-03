@@ -97,8 +97,19 @@ const uploadAbstract = async (req, res) => {
     const themeName = themeNameObject ? themeNameObject.themeName : null;
 
     // Handle file path
+    if (
+      !req.files ||
+      !req.files.abstractFile ||
+      !req.files.abstractFile.length
+    ) {
+      return res.status(404).json({
+        status: false,
+        message: "File not found.",
+      });
+    }
     const absolutePath = req.files.abstractFile[0].path;
     const relativePath = absolutePath.split("uploads")[1].replace(/\\/g, "/");
+    const abstractFileDB = `/uploads${relativePath}`;
     const abstractFilePath = `${BASE_URL_IMG}/uploads${relativePath}`;
 
     // Parse author details
@@ -156,7 +167,7 @@ const uploadAbstract = async (req, res) => {
             abstractTitle,
             abstractDetail,
             keywords: keywordArray.join(","),
-            abstractFile: abstractFilePath,
+            abstractFile: abstractFileDB,
             IsConflictofInterest: Number(IsConflictofInterest) || 0,
             message,
             submissionStatus,
@@ -207,7 +218,7 @@ const uploadAbstract = async (req, res) => {
           abstractTitle,
           abstractDetail,
           keywords: keywordArray.join(","),
-          abstractFile: abstractFilePath,
+          abstractFile: abstractFileDB,
           IsConflictofInterest: Number(IsConflictofInterest) || 0,
           message,
           submissionStatus,
@@ -234,14 +245,17 @@ const uploadAbstract = async (req, res) => {
         },
       });
     }
-
+    const responseData = {
+      ...submission,
+      abstractFile: abstractFilePath,
+    };
     return res.status(200).json({
       status: true,
       message:
         submissionStatus === "DRAFT"
           ? "Abstract saved as draft successfully."
           : "Abstract submitted successfully.",
-      data: submission,
+      data: responseData,
     });
   } catch (err) {
     console.error("Abstract submission error:", err.message || err);

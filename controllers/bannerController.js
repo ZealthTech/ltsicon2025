@@ -28,22 +28,26 @@ const bannerUpload = async (req, res) => {
     const absolutePath = req.files.bannerImage[0].path;
     // Convert to relative path starting from "uploads"
     const relativePath = absolutePath.split("uploads")[1].replace(/\\/g, "/");
+    const bannerImageDB = `/uploads${relativePath}`;
     const bannerImagePath = `${BASE_URL_IMG}/uploads${relativePath}`;
     console.log("banner", bannerImagePath);
     // Save in database
     const banner = await prisma.banner.create({
       data: {
         name: name,
-        bannerImage: bannerImagePath,
+        bannerImage: bannerImageDB,
         sequence: sequence ? Number(sequence) : null,
         status: status ? Number(status) : 1,
       },
     });
-
+    const responseData = {
+      ...banner,
+      bannerImage: bannerImagePath,
+    };
     res.status(201).json({
       status: true,
       message: "Banner uploaded successfully!",
-      data: banner,
+      data: responseData,
     });
   } catch (error) {
     res.status(500).json({

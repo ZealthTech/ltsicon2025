@@ -10,6 +10,7 @@ const generateFolderPath = (fieldname) => {
     bannerImage: "bannerImages",
     newsImage: "newsImages",
     abstractFile: "abstractFiles",
+    profileImage: "profileImages",
   };
 
   return path.join(baseUploadDir, folderMap[fieldname] || "others");
@@ -86,9 +87,11 @@ const bannerImageUpload = createUploader([
 ]);
 const newsImageUpload = createUploader([{ name: "newsImage", maxCount: 1 }]);
 const abstractUpload = createUploader([{ name: "abstractFile", maxCount: 1 }]);
+const profileImageUpload = createUploader([{ name: "profileImage", maxCount: 1 }]);
 
 module.exports = {
   bannerImageUpload,
   newsImageUpload,
   abstractUpload,
+  profileImageUpload
 };

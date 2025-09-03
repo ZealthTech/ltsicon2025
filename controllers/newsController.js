@@ -27,6 +27,7 @@ const newsUpload = async (req, res) => {
     const absolutePath = req.files.newsImage[0].path;
     // Convert to relative path starting from "uploads"
     const relativePath = absolutePath.split("uploads")[1].replace(/\\/g, "/");
+    const newsImageDB = `/uploads${relativePath}`;
     const newsImagePath = `${BASE_URL_IMG}/uploads${relativePath}`;
     console.log("newsImagePath", newsImagePath);
 
@@ -35,16 +36,19 @@ const newsUpload = async (req, res) => {
       data: {
         title,
         description,
-        newsImage: newsImagePath,
+        newsImage: newsImageDB,
         sequence: sequence ? Number(sequence) : null,
         status: status ? Number(status) : 1,
       },
     });
-
+    const responseData = {
+      ...News,
+      newsImage: newsImagePath,
+    };
     res.status(201).json({
       status: true,
       message: "NewsImage uploaded successfully!",
-      data: News,
+      data: responseData,
     });
   } catch (error) {
     res.status(500).json({
