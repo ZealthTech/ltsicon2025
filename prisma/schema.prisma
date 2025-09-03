@@ -166,7 +166,7 @@ model Booking {
   checkout               String?   @db.VarChar(100)
   nights                 String    @default("0") @db.VarChar(11)
   totalPayment           Int?      @default(0) @db.Int
-  screenShot             String?   @db.Text
+  screenshot             String?   @db.Text
   status                 Int       @default(0) @db.Int // 0: pending, 1: active, 2: rejected
   createdOn              DateTime  @default(now()) @db.Timestamp(0)
   updatedOn              DateTime? @db.Timestamp(0)
@@ -341,4 +341,18 @@ model News {
   createdOn   DateTime @default(now()) @db.DateTime(0)
 
   @@map("news")
+}
+
+model PaymentDetails {
+  id                Int      @id @default(autoincrement()) @db.Int
+  bankName          String   @db.VarChar(100)
+  accountNumber     String   @db.VarChar(100)
+  ifscCode          String   @db.VarChar(50)
+  accountHolderName String   @db.VarChar(100)
+  branch            String   @db.VarChar(100)
+  qrcodeImage       String   @db.VarChar(255)
+  status            Int      @default(1) @db.Int // 1 = active,
+  createdOn         DateTime @default(now()) @db.DateTime(0)
+
+  @@map("payment_details")
 }

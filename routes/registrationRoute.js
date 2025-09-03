@@ -2,6 +2,7 @@ const express = require("express");
 const REGISTRATION = express.Router();
 const form = require("../controllers/registrationController");
 const JWT = require("../middleware/auth");
+const FILE = require("../middleware/multer");
 
 REGISTRATION.post(
   "/upload-personal-info",
@@ -28,7 +29,8 @@ REGISTRATION.post(
   JWT.verifyToken([3]),
   form.accomodationInfo
 );
-REGISTRATION.post("/all-info",  form.allInfo);
+REGISTRATION.post("/all-info",  JWT.verifyToken([3]),  form.allInfo);
+REGISTRATION.post("/submit-form",FILE.paymentScreenshotUpload,  form.submitForm);
 REGISTRATION.post(
   "/conference-registration-info",
   JWT.verifyToken([3]),

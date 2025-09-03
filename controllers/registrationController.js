@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
 const generateBookingNumber = async () => {
   let number;
@@ -16,7 +17,7 @@ const generateBookingNumber = async () => {
 
   return number.toString();
 };
-
+//step 1
 const personalInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -105,6 +106,8 @@ const personalInfo = async (req, res) => {
     });
   }
 };
+
+//step 2
 const professionalInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -201,6 +204,8 @@ const professionalInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
+
+//step 3
 const conferenceInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -282,84 +287,8 @@ const conferenceInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
-// const workshopInfo = async (req, res) => {
-//   try {
-//     if (req.method !== "POST") {
-//       return res
-//         .status(405)
-//         .json({ status: false, message: "Method Not Allowed" });
-//     }
 
-//     const { userId, workshops = [] } = req.body; // workshops = array of { name, fee }
-
-//     // 1. Validation
-//     if (!userId) {
-//       return res
-//         .status(400)
-//         .json({ status: false, message: "userId is required" });
-//     }
-
-//     // 2. User check
-//     const user = await prisma.user.findUnique({
-//       where: { userId: Number(userId) },
-//     });
-//     if (!user)
-//       return res.status(401).json({ status: false, message: "User not found" });
-
-//     // 3. Booking check
-//     const booking = await prisma.booking.findFirst({
-//       where: { userId: Number(userId) },
-//     });
-//     if (!booking)
-//       return res
-//         .status(400)
-//         .json({ status: false, message: "No booking found for this user" });
-
-//     // 4. Payment check
-//     if (
-//       !booking.memberType ||
-//       !booking.memberTypeFee ||
-//       booking.memberTypeFee === "0"
-//     ) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "Pay conference fee first to choose workshop",
-//       });
-//     }
-
-//     // 5. Insert workshops if array not empty
-//     let insertedWorkshops = [];
-//     if (workshops.length > 0) {
-//       insertedWorkshops = await Promise.all(
-//         workshops.map(({ name, fee }) =>
-//           prisma.bookingDetail.create({
-//             data: {
-//               user: { connect: { userId: booking.userId } },
-//               booking: { connect: { bookingId: booking.bookingId } },
-//               workshop: name,
-//               workshopFee: Number(fee),
-//             },
-//           })
-//         )
-//       );
-//     }
-
-//     // 6. Response
-//     return res.status(200).json({
-//       status: true,
-//       message:
-//         insertedWorkshops.length > 0
-//           ? "Workshop(s) added successfully"
-//           : "No workshops provided",
-//       data: insertedWorkshops,
-//     });
-//   } catch (err) {
-//     console.error("Workshop info error:", err.message || err);
-//     return res
-//       .status(500)
-//       .json({ status: false, message: "Internal Server Error" });
-//   }
-// };
+//step 4
 const workshopInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -482,6 +411,8 @@ const workshopInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
+
+//step 5
 const accomodationInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -580,6 +511,7 @@ const accomodationInfo = async (req, res) => {
   }
 };
 
+//step 6
 const allInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -633,6 +565,98 @@ const allInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
+
+//step 7
+const submitForm = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
+
+    const { userId, bookingId } = req.body;
+
+    if (!userId || !bookingId) {
+      return res.status(400).json({
+        status: false,
+        message: "userId and bookingId are required",
+      });
+    }
+
+    if (
+      !req.files ||
+      !req.files.screenshot ||
+      req.files.screenshot.length === 0
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "No screenshot uploaded!",
+      });
+    }
+
+    // Step 1: Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { userId: Number(userId) },
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        status: false,
+        message: "User not found",
+      });
+    }
+
+    // Step 2: Check if booking exists
+    const booking = await prisma.booking.findUnique({
+      where: { bookingId: Number(bookingId) },
+    });
+
+    if (!booking) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Step 3: Handle file path
+    const absolutePath = req.files.screenshot[0].path;
+    const relativePath = absolutePath.split("uploads")[1].replace(/\\/g, "/");
+    const screenshotDB = `/uploads${relativePath}`;
+    const screenshotPath = `${BASE_URL_IMG}/uploads${relativePath}`;
+    console.log("screenshotPath", screenshotPath);
+
+    // Step 4: Update booking with screenshot
+    const updatedBooking = await prisma.booking.update({
+      where: { bookingId: Number(bookingId) },
+      data: {
+        screenshot: screenshotDB,
+        status: 4,
+        updatedOn: new Date(),
+      },
+    });
+
+    // Step 5: Send response
+    const responseData = {
+      ...updatedBooking,
+      screenshot: screenshotPath, // return full URL
+    };
+
+    return res.status(200).json({
+      status: true,
+      message: "Form submitted successfully!",
+      data: responseData,
+    });
+  } catch (err) {
+    console.error("SubmitForm API error:", err.message || err);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 const conferenceRegistrationInfo = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -689,7 +713,6 @@ const conferenceRegistrationInfo = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
-
 module.exports = {
   personalInfo,
   professionalInfo,
@@ -698,4 +721,5 @@ module.exports = {
   accomodationInfo,
   allInfo,
   conferenceRegistrationInfo,
+  submitForm,
 };
