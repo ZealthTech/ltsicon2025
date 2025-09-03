@@ -29,8 +29,13 @@ REGISTRATION.post(
   JWT.verifyToken([3]),
   form.accomodationInfo
 );
-REGISTRATION.post("/all-info",  JWT.verifyToken([3]),  form.allInfo);
-REGISTRATION.post("/submit-form",FILE.paymentscreenShotUpload,  form.submitForm);
+REGISTRATION.post("/all-info", JWT.verifyToken([3]), form.allInfo);
+REGISTRATION.post(
+  "/submit-form",
+  JWT.verifyToken([3]),
+  FILE.paymentscreenShotUpload,
+  form.submitForm
+);
 REGISTRATION.post(
   "/conference-registration-info",
   JWT.verifyToken([3]),

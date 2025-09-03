@@ -139,7 +139,7 @@ const uploadAbstract = async (req, res) => {
     if (submissionId) {
       // Existing submission (draft or draft->save)
       const existingSubmission = await prisma.absSubmission.findUnique({
-        where: { submissionId: Number(submissionId) },
+        where: { userId: Number(userId), submissionId: Number(submissionId) },
       });
 
       if (!existingSubmission) {

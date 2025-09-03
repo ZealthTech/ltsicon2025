@@ -315,7 +315,7 @@ const workshopInfo = async (req, res) => {
 
     // 3. Booking check
     let booking = await prisma.booking.findFirst({
-      where: { userId: Number(userId) },
+      where: { userId: Number(userId), bookingId: Number(bookingId) },
     });
     if (!booking)
       return res
@@ -610,13 +610,13 @@ const submitForm = async (req, res) => {
 
     // Step 2: Check if booking exists
     const booking = await prisma.booking.findUnique({
-      where: { bookingId: Number(bookingId) },
+      where: { userId: Number(userId), bookingId: Number(bookingId) },
     });
 
     if (!booking) {
       return res.status(404).json({
         status: false,
-        message: "Booking not found",
+        message: "Booking not found for this User.",
       });
     }
 
