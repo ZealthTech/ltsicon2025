@@ -587,12 +587,12 @@ const submitForm = async (req, res) => {
 
     if (
       !req.files ||
-      !req.files.screenshot ||
-      req.files.screenshot.length === 0
+      !req.files.screenShot ||
+      req.files.screenShot.length === 0
     ) {
       return res.status(400).json({
         status: false,
-        message: "No screenshot uploaded!",
+        message: "No screenShot uploaded!",
       });
     }
 
@@ -621,17 +621,17 @@ const submitForm = async (req, res) => {
     }
 
     // Step 3: Handle file path
-    const absolutePath = req.files.screenshot[0].path;
+    const absolutePath = req.files.screenShot[0].path;
     const relativePath = absolutePath.split("uploads")[1].replace(/\\/g, "/");
-    const screenshotDB = `/uploads${relativePath}`;
-    const screenshotPath = `${BASE_URL_IMG}/uploads${relativePath}`;
-    console.log("screenshotPath", screenshotPath);
+    const screenShotDB = `/uploads${relativePath}`;
+    const screenShotPath = `${BASE_URL_IMG}/uploads${relativePath}`;
+    console.log("screenShotPath", screenShotPath);
 
-    // Step 4: Update booking with screenshot
+    // Step 4: Update booking with screenShot
     const updatedBooking = await prisma.booking.update({
       where: { bookingId: Number(bookingId) },
       data: {
-        screenshot: screenshotDB,
+        screenShot: screenShotDB,
         status: 4,
         updatedOn: new Date(),
       },
@@ -640,7 +640,7 @@ const submitForm = async (req, res) => {
     // Step 5: Send response
     const responseData = {
       ...updatedBooking,
-      screenshot: screenshotPath, // return full URL
+      screenShot: screenShotPath, // return full URL
     };
 
     return res.status(200).json({

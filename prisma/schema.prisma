@@ -166,7 +166,7 @@ model Booking {
   checkout               String?   @db.VarChar(100)
   nights                 String    @default("0") @db.VarChar(11)
   totalPayment           Int?      @default(0) @db.Int
-  screenshot             String?   @db.Text
+  screenShot             String?   @db.Text
   status                 Int       @default(0) @db.Int // 0: pending, 1: active, 2: rejected
   createdOn              DateTime  @default(now()) @db.Timestamp(0)
   updatedOn              DateTime? @db.Timestamp(0)

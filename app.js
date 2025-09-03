@@ -30,8 +30,8 @@ app.use("/uploads/icons", express.static("uploads/icons"));
 app.use("/uploads/abstractFiles", express.static("uploads/abstractFiles"));
 app.use("/uploads/qrcodeImages", express.static("uploads/qrcodeImages"));
 app.use(
-  "/uploads/screenshots",
-  express.static("uploads/screenshots")
+  "/uploads/screenShots",
+  express.static("uploads/screenShots")
 );
 // Set Content-Type headers based on file extensions
 const contentTypeMap = {
