@@ -10,6 +10,6 @@ ALBUM.post(
   JWT.verifyToken([1, 3]),
   gallery.fetchAlbumList
 );
-ALBUM.post("/fetch-album-detail", gallery.fetchAlbumDetail);
+ALBUM.post("/fetch-album-detail",JWT.verifyToken([1, 3]), gallery.fetchAlbumDetail);
 
 module.exports = ALBUM;
