@@ -29,6 +29,8 @@ app.use("/uploads/profileImages", express.static("uploads/profileImages"));
 app.use("/uploads/icons", express.static("uploads/icons"));
 app.use("/uploads/abstractFiles", express.static("uploads/abstractFiles"));
 app.use("/uploads/qrcodeImages", express.static("uploads/qrcodeImages"));
+app.use("/uploads/albumImages", express.static("uploads/albumImages"));
+app.use("/uploads/thumbnails", express.static("uploads/thumbnails"));
 app.use(
   "/uploads/screenShots",
   express.static("uploads/screenShots")

@@ -356,3 +356,18 @@ model PaymentDetails {
 
   @@map("payment_details")
 }
+
+model PhotoAlbum {
+  id         Int      @id @default(autoincrement()) @db.Int
+  userId     Int
+  title      String   @db.VarChar(100)
+  thumbnail  String   @db.VarChar(100)
+  day        String   @db.VarChar(50)
+  dateTime   String   @db.VarChar(100)
+  ownerName  String   @db.VarChar(100)
+  albumImage Json
+  status     Int      @default(1) @db.Int // 1 = active,
+  createdOn  DateTime @default(now()) @db.DateTime(0)
+
+  @@map("photo_album")
+}

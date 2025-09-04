@@ -13,6 +13,8 @@ const generateFolderPath = (fieldname) => {
     profileImage: "profileImages",
     qrcodeImage: "qrcodeImages",
     screenShot: "screenShots",
+    albumImage: "albumImages",
+    thumbnail: "thumbnails",
   };
 
   return path.join(baseUploadDir, folderMap[fieldname] || "others");
@@ -98,6 +100,10 @@ const qrcodeImageUpload = createUploader([
 const paymentscreenShotUpload = createUploader([
   { name: "screenShot", maxCount: 1 },
 ]);
+const albumUpload = createUploader([
+  { name: "albumImage", maxCount: 10 }, // multiple images allowed
+  { name: "thumbnail", maxCount: 1 }, // single thumbnail
+]);
 
 module.exports = {
   bannerImageUpload,
@@ -106,4 +112,5 @@ module.exports = {
   profileImageUpload,
   qrcodeImageUpload,
   paymentscreenShotUpload,
+  albumUpload,
 };

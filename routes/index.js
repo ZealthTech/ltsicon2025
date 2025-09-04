@@ -9,6 +9,7 @@ const abstract = require("./abstractRoute");
 const profile = require("./profileeRoute");
 const payment = require("./paymentRoute");
 const news = require("./newsRoute");
+const album = require("./albumRoute");
 const router = express.Router();
 
 router.use("/", test); // Handle / routes
@@ -21,5 +22,6 @@ router.use("/registration", registration); // Handle /user routes
 router.use("/abstract", abstract); // Handle /user routes
 router.use("/profile", profile); // Handle /user routes
 router.use("/payment", payment); // Handle /user routes
+router.use("/album", album); // Handle /user routes
 
 module.exports = router;
