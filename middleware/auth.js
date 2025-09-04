@@ -2,13 +2,13 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-// const cookieParser = require("cookie-parser");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
-const ACCESS_TOKEN_EXPIRY = "180d";
-const REFRESH_TOKEN_EXPIRY = "7d";
+const ACCESS_TOKEN_EXPIRY = "1d"; // Short-lived, safer
+const REFRESH_TOKEN_EXPIRY = "7d"; // Long-lived
 
+// --- Token Generators ---
 function generateAccessToken(payload) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
 }
@@ -19,85 +19,124 @@ function generateRefreshToken(payload) {
   });
 }
 
-const verifyToken= (allowedRoles) => (req, res, next) => {
-  const token = req.headers.authorization;
-  if (!token) {
-    return res.status(401).json({ error: "Access denied, token missing" });
-  }
-  if (!JWT_SECRET) {
-    console.error("JWT_SECRET is not defined");
-    return res.status(500).json({ error: "Internal server error" });
-  }
-  const decoded = jwt.verify(token, JWT_SECRET);
-  try {
-    req.user = decoded;
-    if (!allowedRoles.includes(req.user.roleId)) {
-      return res.status(403).json({ message: 'Forbidden - permission denied' });
-    }
-    next();
-  } catch (error) {
-    console.log("Token verification error:", error.message);
-
-    if (error.name === "TokenExpiredError") {
-      console.log("Access token expired, attempting to refresh...");
-
-      const refreshToken = req.cookies?.refreshToken;
-
-      if (!refreshToken) {
-        return res
-          .status(401)
-          .json({ error: "Session expired, please log in again" });
-      }
-
+// --- Verify Access Token Middleware ---
+const verifyToken = (allowedRoles = []) => {
+  return async (req, res, next) => {
+    try {
+      const token = req.headers.authorization;
+      if (!JWT_SECRET) {
+        console.error("JWT_SECRET is not defined");
+        return res.status(500).json({ error: "Internal server error" });
+      };
+      // Verify token and get decoded payload
+      let decoded;
       try {
-        const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
-        req.user = decoded;
-
-        const newAccessToken = generateAccessToken({
-          userId: decoded.userId,
-          email: decoded.email,
-          role: decoded.role,
-          firstName: decoded.firstName,
-          lastName: decoded.lastName,
-          phone: decoded.phone,
-        });
-
-        res.setHeader("Authorization", `Bearer ${newAccessToken}`);
-        res.json({ accessToken: newAccessToken }); // Return in response
-        next();
-      } catch (refreshError) {
-        console.error("Refresh token error:", refreshError.message);
-        return res
-          .status(401)
-          .json({ error: "Invalid refresh token, please log in again" });
+        decoded = jwt.verify(token, JWT_SECRET);
+        console.log("decode", decoded);
+      } catch (err) {
+        if (err.name === "TokenExpiredError") {
+          return res.status(401).json({ error: "Access token expired" });
+        }
+        return res.status(401).json({ error: "Invalid token" });
       }
-    } else {
-      console.error("Invalid token:", error.message);
-      return res.status(401).json({ error: "Invalid token" });
-    }
-  }
-}
+      const user = await prisma.user.findUnique({
+        where: { userId: Number(req.body.userId) },
+        select: {
+          userId: true,
+          email: true,
+          roleId: true,
+        },
+      });
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+      console.log("userr", user);
+      if (allowedRoles.length > 0 && !allowedRoles.includes(user.roleId)) {
+        return res
+          .status(403)
+          .json({ message: "Forbidden - insufficient permissions" });
+      }
 
+      // Attach DB user info to req.user for safety
+      req.user = {
+        userId: user.userId,
+        email: user.email,
+        roleId: user.roleId,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      };
+
+      if (req.body.userId === decoded.userId) {
+        next();
+      } else {
+        return res.status(401).json({ error: "Invalid Token" });
+      }
+    } catch (error) {
+      console.error("Token verification error:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  };
+};
+
+// --- Refresh Access Token ---
+const refreshAccessToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+      return res
+        .status(401)
+        .json({ error: "No refresh token, please log in again" });
+    }
+
+    const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+
+    // Extra security: check refresh token against DB/session store if stored
+    const user = await prisma.user.findUnique({
+      where: { userId: decoded.userId },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    const newAccessToken = generateAccessToken({
+      userId: decoded.userId,
+      email: decoded.email,
+      roleId: decoded.roleId,
+      firstName: decoded.firstName,
+      lastName: decoded.lastName,
+      phone: decoded.phone,
+    });
+
+    res.setHeader("Authorization", `Bearer ${newAccessToken}`);
+    return res.json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error("Refresh token error:", error.message);
+    return res
+      .status(401)
+      .json({ error: "Invalid refresh token, please log in again" });
+  }
+};
+
+// --- Route Permission Middleware for Subadmins ---
 const checkRoutePermission = () => {
   return async (req, res, next) => {
-    const { userId, roleId, routeKey } = req.body;
-
-    // Validate inputs
-    if (!userId || !roleId || !routeKey) {
-      return res.status(400).json({
-        status: false,
-        message: "userId, roleId, and routeKey are required.",
-      });
-    }
-
     try {
+      const { routeKey } = req.body;
+
+      if (!routeKey) {
+        return res.status(400).json({
+          status: false,
+          message: "routeKey is required.",
+        });
+      }
+
+      // Use user info from verified JWT, NOT body
+      const { userId, roleId } = req.user;
+
       const subadmin = await prisma.subadmin.findFirst({
-        where: {
-          userId: Number(userId),
-        },
-        include: {
-          user: true,
-        },
+        where: { userId: Number(userId) },
+        include: { user: true },
       });
 
       if (!subadmin) {
@@ -114,8 +153,7 @@ const checkRoutePermission = () => {
         });
       }
 
-      const permissions = subadmin.permissions; // assuming this is a JSON object
-
+      const permissions = subadmin.permissions; // JSON column in DB
       if (!permissions || permissions[routeKey] !== 1) {
         return res.status(403).json({
           status: false,
@@ -123,10 +161,10 @@ const checkRoutePermission = () => {
         });
       }
 
-      next(); // All checks passed
+      next();
     } catch (error) {
       console.error("Permission middleware error:", error);
-      res.status(500).json({
+      return res.status(500).json({
         status: false,
         message: "Internal server error during permission check.",
       });
@@ -134,10 +172,10 @@ const checkRoutePermission = () => {
   };
 };
 
-
 module.exports = {
   verifyToken,
+  refreshAccessToken,
   generateAccessToken,
   generateRefreshToken,
-  checkRoutePermission
+  checkRoutePermission,
 };

@@ -330,7 +330,7 @@ const signupForm = async (req, res) => {
     const token = jwt.sign(
       { email: user.email, roleId: user.roleId },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "180d" }
     );
     // 3. Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -647,7 +647,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
         roleId: user.roleId,
       },
       JWT_SECRET,
-      { expiresIn: "7d" } // token valid for 7 days
+      { expiresIn: "180d" } // token valid for 7 days
     );
     // 6. Clear OTP
     const updatedUser = await prisma.user.update({
@@ -879,7 +879,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
       const token = jwt.sign(
         { userId: user.userId, role: user.role?.name },
         process.env.JWT_SECRET,
-        { expiresIn: "1d" }
+        { expiresIn: "180d" }
       );
 
       // Clear OTP
@@ -948,7 +948,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             phone: externalUser.phone,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "1d" }
+          { expiresIn: "180d" }
         );
 
         let specialityDept = null;
