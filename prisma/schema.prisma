@@ -92,15 +92,19 @@ model SpecialityDepartment {
 }
 
 model InvitedMember {
-  id        Int      @id @default(autoincrement())
-  name      String?  @db.VarChar(100)
-  ltsino    String?  @db.VarChar(100)
-  email     String   @db.VarChar(200)
-  nights    Int      @db.Int
-  createdOn DateTime @default(now()) @db.DateTime(0)
+  id       Int      @id @default(autoincrement())
+  name     String  // nullable because DEFAULT NULL
+  state    String?  // nullable because DEFAULT NULL
+  country  String?
+  ltsino   String?  // nullable
+  email    String?
+  phone    String?  // nullable
+  photo    String?  // nullable
+  nights   Int?      @default(2)
+  status   Int      @default(1)
+  createdOn DateTime @default(now())
 
-  @@index([email])
-  @@map("invited_member")
+  @@map("invited_member")  // keeps the table name from MySQL
 }
 
 model Event {
@@ -361,11 +365,11 @@ model PhotoAlbum {
   id        Int          @id @default(autoincrement())
   userId    Int?
   title     String
-  thumbnail String
-  day       String
-  dateTime  String
+  thumbnail String?
+  day       String?
+  dateTime  String?
   status    Int          @default(1)
-  ownerName String
+  ownerName String?
   createdOn DateTime     @default(now())
   albumImage    AlbumImage[] // relation
 }
@@ -378,3 +382,32 @@ model AlbumImage {
 
   album PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
 }
+
+model ResponsibilityWork {
+  id          Int      @id @default(autoincrement())
+  invitedMemId Int
+  topic       String
+  role        String
+  dateTime    String
+  location    String
+  title       String
+  createdOn   DateTime @default(now())
+  
+  @@map("responsibilityWork") // map to existing table name in DB
+}
+model Responsibility {
+  responsibilityId Int     @id @default(autoincrement())
+  responsibility   String?  // nullable because your MySQL column allows DEFAULT NULL
+
+  @@map("responsibility")  // keeps the original table name
+}
+
+model ChooseSession {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  createdOn DateTime @default(now())
+
+  @@map("chooseSession") // keeps the original table name
+}
+

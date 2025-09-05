@@ -33,6 +33,8 @@ const homepage = async (req, res) => {
           "Invalid Token",
       });
     }
+
+    const updatedUser={...user,profileImage:user.profileImage?`${BASE_URL_IMG}${user.profileImage}`:null}
     //  Fetch banners
     const bannerss = await prisma.banner.findMany({
       where: { status: 1 },
@@ -121,7 +123,7 @@ const homepage = async (req, res) => {
       status: true,
       message: "Homepage data fetched successfully",
       data: {
-        user,
+        updatedUser,
         banners,
         news,
         sections,
