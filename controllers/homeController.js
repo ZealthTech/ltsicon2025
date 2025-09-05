@@ -15,26 +15,30 @@ const homepage = async (req, res) => {
     }
 
     //  Fetch user profile
-    const user = await prisma.user.findFirst({
+    const userData = await prisma.user.findFirst({
       where: { userId: Number(userId), roleId: Number(roleId), status: 1 },
     });
 
-    if (!user) {
+    if (!userData) {
       return res.status(401).json({
         status: false,
         message: "User not found",
       });
     }
 
-      if (Number(userId) !== req.user.userId) {
+    if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
-        message:
-          "Invalid Token",
+        message: "Invalid Token",
       });
     }
 
-    const updatedUser={...user,profileImage:user.profileImage?`${BASE_URL_IMG}${user.profileImage}`:null}
+    const user = {
+      ...userData,
+      profileImage: userData.profileImage
+        ? `${BASE_URL_IMG}${userData.profileImage}`
+        : null,
+    };
     //  Fetch banners
     const bannerss = await prisma.banner.findMany({
       where: { status: 1 },
@@ -123,7 +127,7 @@ const homepage = async (req, res) => {
       status: true,
       message: "Homepage data fetched successfully",
       data: {
-        updatedUser,
+        user,
         banners,
         news,
         sections,
