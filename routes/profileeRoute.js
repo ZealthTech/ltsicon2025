@@ -8,7 +8,8 @@ PROFILE.post(
   "/upload-profile",
   JWT.verifyToken([3]),
   FILE.profileImageUpload,
-  profile.profileUpload
+  profile.profileUpload,
 );
 
 module.exports = PROFILE;
+///uploads/profileImages/profileImage_1757051205900_4awck8.jpeg

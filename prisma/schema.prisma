@@ -358,16 +358,23 @@ model PaymentDetails {
 }
 
 model PhotoAlbum {
-  id         Int      @id @default(autoincrement()) @db.Int
-  userId     Int
-  title      String   @db.VarChar(100)
-  thumbnail  String   @db.VarChar(100)
-  day        String   @db.VarChar(50)
-  dateTime   String   @db.VarChar(100)
-  ownerName  String   @db.VarChar(100)
-  albumImage Json
-  status     Int      @default(1) @db.Int // 1 = active,
-  createdOn  DateTime @default(now()) @db.DateTime(0)
+  id        Int          @id @default(autoincrement())
+  userId    Int?
+  title     String
+  thumbnail String
+  day       String
+  dateTime  String
+  status    Int          @default(1)
+  ownerName String
+  createdOn DateTime     @default(now())
+  albumImage    AlbumImage[] // relation
+}
 
-  @@map("photo_album")
+model AlbumImage {
+  id        Int      @id @default(autoincrement())
+  albumId   Int
+  path      String
+  createdOn DateTime @default(now())
+
+  album PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
 }

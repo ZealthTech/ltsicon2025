@@ -26,6 +26,13 @@ const homepage = async (req, res) => {
       });
     }
 
+      if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     //  Fetch banners
     const bannerss = await prisma.banner.findMany({
       where: { status: 1 },

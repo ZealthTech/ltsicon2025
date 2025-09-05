@@ -11,7 +11,7 @@ const uploadAlbum = async (req, res) => {
         message: "Method Not Allowed",
       });
     }
-    console.log("req.files", req.files);
+
     if (
       !req.files ||
       !req.files.albumImage ||
@@ -37,65 +37,66 @@ const uploadAlbum = async (req, res) => {
         .status(400)
         .json({ status: false, message: "Missing required fields" });
     }
-    // Convert uploaded images into DB paths + public URLs
-    const newAlbumImagesDB = req.files.albumImage.map((file) => {
+
+    // Prepare image paths
+    const newAlbumImages = req.files.albumImage.map((file) => {
       const relativePath = file.path.split("uploads")[1].replace(/\\/g, "/");
       return `/uploads${relativePath}`;
     });
-
-    const newAlbumImagesPath = newAlbumImagesDB.map(
-      (path) => `${BASE_URL_IMG}${path}`
-    );
 
     let album;
 
     if (id) {
       // Update existing album (append images)
-      album = await prisma.photoAlbum.findFirst({
+      album = await prisma.photoAlbum.findUnique({
         where: { id: Number(id) },
+        include: { albumImage: true },
       });
 
       if (!album) {
-        return res.status(404).json({
-          status: false,
-          message: "Album not found",
-        });
+        return res
+          .status(404)
+          .json({ status: false, message: "Album not found" });
       }
 
-      // Merge old + new images
-      const updatedImages = [...album.albumImage, ...newAlbumImagesDB];
+      // Create AlbumImage entries
+      const imageRecords = newAlbumImages.map((path) => ({
+        path,
+        albumId: album.id,
+      }));
 
-      album = await prisma.photoAlbum.update({
+      await prisma.albumImage.createMany({ data: imageRecords });
+
+      // Refetch album with updated images
+      album = await prisma.photoAlbum.findUnique({
         where: { id: Number(id) },
-        data: {
-          albumImage: updatedImages,
-          createdOn: new Date(),
-        },
+        include: { albumImage: true },
       });
     } else {
-      // Create new album
-      const thumbnailDB = newAlbumImagesDB[0];
+      // Create new album with nested AlbumImage entries
       album = await prisma.photoAlbum.create({
         data: {
           userId: Number(userId),
           title,
-          thumbnail: thumbnailDB,
+          thumbnail: newAlbumImages[0], // first image as thumbnail
           day,
           dateTime,
           ownerName,
-          albumImage: newAlbumImagesDB,
-          status: status ? Number(status) : 1,
+          status: Number(status),
           createdOn: new Date(),
-          userId: userId ? Number(userId) : null,
+          albumImage: {
+            create: newAlbumImages.map((path) => ({ path })),
+          },
         },
+        include: { albumImage: true },
       });
     }
 
-    // Response with public URLs
+    // Prepare response with full URLs
     const responseData = {
       ...album,
+      albumImage: album.albumImage.map((img) => `${BASE_URL_IMG}${img.path}`),
       thumbnail: `${BASE_URL_IMG}${album.thumbnail}`,
-      albumImage: album.albumImage.map((img) => `${BASE_URL_IMG}${img}`),
     };
 
     res.status(id ? 200 : 201).json({
@@ -128,6 +129,13 @@ const fetchAlbumList = async (req, res) => {
       return res
         .status(400)
         .json({ status: false, message: "Missing required fields" });
+    }
+      if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
     }
     // Check if user exists
     const user = await prisma.user.findFirst({
@@ -196,7 +204,13 @@ const fetchAlbumDetail = async (req, res) => {
         message: "Missing required fields",
       });
     }
-
+  if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     // Verify user exists
     const user = await prisma.user.findFirst({
       where: { userId: Number(userId), roleId: Number(roleId), status: 1 },
@@ -249,4 +263,88 @@ const fetchAlbumDetail = async (req, res) => {
   }
 };
 
-module.exports = { uploadAlbum, fetchAlbumList, fetchAlbumDetail };
+const deleteAlbum = async (req, res) => {
+  try {
+    if (req.method !== "DELETE") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
+
+    const { id, ids, userId, roleId } = req.body;
+
+    if (!userId || !roleId) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Missing required fields" });
+    }
+    // Verify user exists
+    const user = await prisma.user.findFirst({
+      where: { userId: Number(userId), roleId: Number(roleId) },
+    });
+    if (!user) {
+      return res.status(401).json({
+        status: false,
+        message: "Admin not found",
+      });
+    }
+    if (!id && (!ids || !Array.isArray(ids) || ids.length === 0)) {
+      return res.status(400).json({
+        status: false,
+        message: "Provide album id or ids to delete",
+      });
+    }
+
+    let deletedAlbums;
+
+    if (id) {
+      // Delete single album
+      const album = await prisma.albumImage.findUnique({
+        where: { id: Number(id) },
+      });
+      if (!album) {
+        return res
+          .status(404)
+          .json({ status: false, message: "Album not found" });
+      }
+
+      deletedAlbums = await prisma.albumImage.delete({
+        where: { id: Number(id) },
+      });
+    } else if (ids && ids.length > 0) {
+        console.log("isdss",ids)
+      // Delete multiple albums
+      const numericIds = ids.map(Number);
+
+      // Optional: check existence first
+      const existingAlbums = await prisma.albumImage.findMany({
+        where: { id: { in: numericIds } },
+      });
+
+      if (existingAlbums.length === 0) {
+        return res
+          .status(404)
+          .json({ status: false, message: "No albums found to delete" });
+      }
+
+      deletedAlbums = await prisma.albumImage.deleteMany({
+        where: { id: { in: numericIds } },
+      });
+    }
+
+    res.status(200).json({
+      status: true,
+      message: "Album(s) deleted successfully!",
+      data: deletedAlbums,
+    });
+  } catch (error) {
+    console.error("Delete Album Error:", error);
+    res.status(500).json({
+      status: false,
+      message: error.message || "Internal Server Error",
+    });
+  }
+};
+
+module.exports = { uploadAlbum, fetchAlbumList, fetchAlbumDetail, deleteAlbum };

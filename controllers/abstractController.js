@@ -60,7 +60,12 @@ const uploadAbstract = async (req, res) => {
         .status(400)
         .json({ status: false, message: "All fields are required." });
     }
-
+    if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid Token",
+      });
+    }
     // Abstract word count check
     const wordCount = abstractDetail.trim().split(/\s+/).length;
     if (wordCount > 300) {
@@ -265,6 +270,78 @@ const uploadAbstract = async (req, res) => {
   }
 };
 
+const fetchAbstractList = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
+
+    const { userId } = req.body;
+
+    // 1. Validation
+    if (!userId) {
+      return res.status(400).json({
+        status: false,
+        message: "userId is required",
+      });
+    }
+    console.log("req.user.userId",req.body.userId)
+    console.log("req.user.userId11",req.user.userId)
+    if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid Token",
+      });
+    }
+    // 2. Fetch submission with authors + user info
+    const submission = await prisma.absSubmission.findMany({
+      where: {
+        userId: Number(userId),
+      },
+      include: {
+        authors: true,
+        user: {
+          select: {
+            userId: true,
+            roleId: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            gender: true,
+            country: true,
+            medicalCouncilNumber: true,
+            isLTSI: true,
+            LTSINumber: true,
+          },
+        },
+      },
+    });
+
+    if (!submission) {
+      return res.status(404).json({
+        status: false,
+        message: "No submission found for this user",
+      });
+    }
+
+    // 3. Response
+    return res.status(200).json({
+      status: true,
+      message: "Abstract details fetched successfully",
+      data: submission,
+    });
+  } catch (err) {
+    console.error("fetchAbstractDetail API error:", err.message || err);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
 const fetchAbstractDetail = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -283,7 +360,12 @@ const fetchAbstractDetail = async (req, res) => {
         message: "userId and submissionId are required",
       });
     }
-
+    if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid Token",
+      });
+    }
     // 2. Fetch submission with authors + user info
     const submission = await prisma.absSubmission.findFirst({
       where: {
@@ -331,6 +413,7 @@ const fetchAbstractDetail = async (req, res) => {
     });
   }
 };
+
 const deleteAbstract = async (req, res) => {
   try {
     if (req.method !== "DELETE") {
@@ -349,7 +432,12 @@ const deleteAbstract = async (req, res) => {
         message: "userId and submissionId are required",
       });
     }
-
+    if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid Token",
+      });
+    }
     // 2. Check if submission exists and belongs to this user
     const submission = await prisma.absSubmission.findFirst({
       where: {
@@ -390,6 +478,7 @@ const deleteAbstract = async (req, res) => {
 
 module.exports = {
   uploadAbstract,
+  fetchAbstractList,
   fetchAbstractDetail,
   deleteAbstract,
 };

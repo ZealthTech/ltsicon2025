@@ -59,6 +59,13 @@ const personalInfo = async (req, res) => {
       });
     }
 
+     if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     // Perform UPSERT
     const updatedUser = await prisma.user.upsert({
       where: { email },
@@ -134,6 +141,13 @@ const professionalInfo = async (req, res) => {
       });
     }
 
+      if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     // 2. Ensure user exists
     const user = await prisma.user.findUnique({
       where: { userId: Number(userId) },
@@ -230,6 +244,13 @@ const conferenceInfo = async (req, res) => {
       });
     }
 
+      if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     // 2. Check if user exists
     const user = await prisma.user.findUnique({
       where: { userId: Number(userId) },
@@ -304,6 +325,13 @@ const workshopInfo = async (req, res) => {
       return res
         .status(400)
         .json({ status: false, message: "userId is required" });
+    }
+      if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
     }
 
     // 2. User check
@@ -439,7 +467,13 @@ const accomodationInfo = async (req, res) => {
         message: "userId is required",
       });
     }
-
+  if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     // 2. Check if user exists
     const user = await prisma.user.findUnique({
       where: { userId: Number(userId) },
@@ -527,7 +561,13 @@ const allInfo = async (req, res) => {
         .status(400)
         .json({ status: false, message: "userId and bookingId are required" });
     }
-
+  if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     // Fetch user and filter bookings by bookingId
     const userData = await prisma.user.findUnique({
       where: { userId: Number(userId) },
@@ -584,7 +624,13 @@ const submitForm = async (req, res) => {
         message: "userId and bookingId are required",
       });
     }
-
+  if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     if (
       !req.files ||
       !req.files.screenShot ||
@@ -665,14 +711,20 @@ const conferenceRegistrationInfo = async (req, res) => {
         .json({ status: false, message: "Method Not Allowed" });
     }
 
-    const { userId, bookingId } = req.body;
+    const { userId } = req.body;
 
     if (!userId) {
       return res
         .status(400)
         .json({ status: false, message: "userId is required" });
     }
-
+  if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+          "Invalid Token",
+      });
+    }
     // Fetch user and filter bookings by bookingId
     const userData = await prisma.user.findFirst({
       where: {

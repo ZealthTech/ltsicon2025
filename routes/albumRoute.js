@@ -10,6 +10,11 @@ ALBUM.post(
   JWT.verifyToken([1, 3]),
   gallery.fetchAlbumList
 );
-ALBUM.post("/fetch-album-detail",JWT.verifyToken([1, 3]), gallery.fetchAlbumDetail);
+ALBUM.post(
+  "/fetch-album-detail",
+  JWT.verifyToken([1, 3]),
+  gallery.fetchAlbumDetail
+);
+ALBUM.delete("/delete-album-images", gallery.deleteAlbum);
 
 module.exports = ALBUM;

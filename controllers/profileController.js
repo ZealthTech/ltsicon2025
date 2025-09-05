@@ -6,11 +6,29 @@ const fs = require("fs");
 const path = require("path");
 
 const profileUpload = async (req, res) => {
+  console.log("first");
   try {
     if (req.method !== "POST") {
       return res.status(405).json({
         status: false,
         message: "Method Not Allowed",
+      });
+    }
+
+    const { userId, roleId } = req.body;
+
+    if (!userId || !roleId) {
+      return res.status(400).json({
+        status: false,
+        message: "User ID and roleId are required",
+      });
+    }
+    console.log("req.body", req.body);
+    if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message:
+        "Invalid Token",
       });
     }
 
@@ -25,18 +43,9 @@ const profileUpload = async (req, res) => {
       });
     }
 
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({
-        status: false,
-        message: "User ID is required",
-      });
-    }
-
     // Check if user exists
     const user = await prisma.user.findFirst({
-      where: { userId: Number(userId) },
+      where: { userId: Number(userId), roleId: Number(roleId) },
     });
 
     if (!user) {

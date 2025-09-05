@@ -10,6 +10,7 @@ ABSTRACT.post(
   FILE.abstractUpload,
   abs.uploadAbstract
 );
+ABSTRACT.post("/fetch-list", JWT.verifyToken([3]), abs.fetchAbstractList);
 ABSTRACT.post("/fetch-detail", JWT.verifyToken([3]), abs.fetchAbstractDetail);
 ABSTRACT.delete("/delete-abstract", JWT.verifyToken([3]), abs.deleteAbstract);
 

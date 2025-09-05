@@ -24,53 +24,53 @@ const verifyToken = (allowedRoles = []) => {
   return async (req, res, next) => {
     try {
       const token = req.headers.authorization;
+      if (!token) {
+        return res.status(401).json({ error: "No token provided" });
+      }
+
       if (!JWT_SECRET) {
         console.error("JWT_SECRET is not defined");
         return res.status(500).json({ error: "Internal server error" });
-      };
-      // Verify token and get decoded payload
+      }
+
+      // Verify token
       let decoded;
       try {
         decoded = jwt.verify(token, JWT_SECRET);
-        console.log("decode", decoded);
       } catch (err) {
         if (err.name === "TokenExpiredError") {
           return res.status(401).json({ error: "Access token expired" });
         }
         return res.status(401).json({ error: "Invalid token" });
       }
+
+      // Fetch user from DB based on decoded userId
       const user = await prisma.user.findUnique({
-        where: { userId: Number(req.body.userId) },
+        where: { userId: Number(decoded.userId) },
         select: {
           userId: true,
           email: true,
           roleId: true,
+          firstName: true,
+          lastName: true,
         },
       });
+
       if (!user) {
         return res.status(401).json({ error: "User not found" });
       }
-      console.log("userr", user);
+
+      // Role check
       if (allowedRoles.length > 0 && !allowedRoles.includes(user.roleId)) {
         return res
           .status(403)
           .json({ message: "Forbidden - insufficient permissions" });
       }
 
-      // Attach DB user info to req.user for safety
-      req.user = {
-        userId: user.userId,
-        email: user.email,
-        roleId: user.roleId,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      };
+      // Attach safe user info to request
+      req.user = user;
 
-      if (req.body.userId === decoded.userId) {
-        next();
-      } else {
-        return res.status(401).json({ error: "Invalid Token" });
-      }
+      next();
     } catch (error) {
       console.error("Token verification error:", error);
       return res.status(500).json({ error: "Internal server error" });

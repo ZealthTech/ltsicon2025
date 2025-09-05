@@ -6,7 +6,6 @@ const JWT = require("../middleware/auth");
 
 BANNER.post(
   "/upload-banner",
-  JWT.verifyToken([3]),
   FILE.bannerImageUpload,
   banner.bannerUpload
 );

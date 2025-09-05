@@ -6,7 +6,6 @@ const JWT = require("../middleware/auth");
 
 NEWS.post(
   "/upload-news",
-  JWT.verifyToken([3]),
   FILE.newsImageUpload,
   news.newsUpload
 );
