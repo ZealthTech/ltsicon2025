@@ -91,22 +91,6 @@ model SpecialityDepartment {
   @@map("specialityDepartment")
 }
 
-model InvitedMember {
-  id       Int      @id @default(autoincrement())
-  name     String  // nullable because DEFAULT NULL
-  state    String?  // nullable because DEFAULT NULL
-  country  String?
-  ltsino   String?  // nullable
-  email    String?
-  phone    String?  // nullable
-  photo    String?  // nullable
-  nights   Int?      @default(2)
-  status   Int      @default(1)
-  createdOn DateTime @default(now())
-
-  @@map("invited_member")  // keeps the table name from MySQL
-}
-
 model Event {
   eventId     Int      @id @default(autoincrement())
   dayNo       Int      @db.Int
@@ -382,19 +366,41 @@ model AlbumImage {
 
   album PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
 }
+model InvitedMember {
+  id        Int                  @id @default(autoincrement())
+  name      String
+  state     String?
+  country   String?
+  ltsino    String?
+  email     String?
+  phone     String?
+  photo     String?
+  nights    Int?                 @default(2)
+  status    Int                  @default(1)
+  createdOn DateTime             @default(now())
+
+  // Relation: one invited member can have many responsibilities
+  responsibilityWork ResponsibilityWork[]
+
+  @@map("invited_member")
+}
 
 model ResponsibilityWork {
-  id          Int      @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   invitedMemId Int
-  topic       String
-  role        String
-  dateTime    String
-  location    String
-  title       String
-  createdOn   DateTime @default(now())
-  
-  @@map("responsibilityWork") // map to existing table name in DB
+  topic        String
+  role         String
+  dateTime     String
+  location     String
+  title        String
+  createdOn    DateTime      @default(now())
+
+  // Relation back to InvitedMember
+  invitedMember InvitedMember @relation(fields: [invitedMemId], references: [id], onDelete: Cascade)
+
+  @@map("responsibilityWork")
 }
+
 model Responsibility {
   responsibilityId Int     @id @default(autoincrement())
   responsibility   String?  // nullable because your MySQL column allows DEFAULT NULL
