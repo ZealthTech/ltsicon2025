@@ -130,11 +130,10 @@ const fetchAlbumList = async (req, res) => {
         .status(400)
         .json({ status: false, message: "Missing required fields" });
     }
-      if (Number(userId) !== req.user.userId) {
+    if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
-        message:
-          "Invalid Token",
+        message: "Invalid Token",
       });
     }
     // Check if user exists
@@ -204,11 +203,11 @@ const fetchAlbumDetail = async (req, res) => {
         message: "Missing required fields",
       });
     }
-  if (Number(userId) !== req.user.userId) {
+    console.log("req", req.body);
+    if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
-        message:
-          "Invalid Token",
+        message: "Invalid Token",
       });
     }
     // Verify user exists
@@ -226,6 +225,7 @@ const fetchAlbumDetail = async (req, res) => {
     // Fetch album by ID & status
     const album = await prisma.photoAlbum.findFirst({
       where: { id: Number(id), status: Number(status) },
+      include: { albumImage: true },
     });
 
     if (!album) {
@@ -245,7 +245,10 @@ const fetchAlbumDetail = async (req, res) => {
       createdOn: album.createdOn,
       thumbnail: `${BASE_URL_IMG}${album.thumbnail}`,
       albumImage: Array.isArray(album.albumImage)
-        ? album.albumImage.map((img) => `${BASE_URL_IMG}${img}`)
+        ? album.albumImage.map((img) => ({
+            ...img,
+            path: `${BASE_URL_IMG}${img.path}`,
+          }))
         : [],
     };
 
@@ -313,7 +316,7 @@ const deleteAlbum = async (req, res) => {
         where: { id: Number(id) },
       });
     } else if (ids && ids.length > 0) {
-        console.log("isdss",ids)
+      console.log("isdss", ids);
       // Delete multiple albums
       const numericIds = ids.map(Number);
 
