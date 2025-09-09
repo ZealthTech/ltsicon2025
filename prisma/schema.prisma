@@ -92,23 +92,36 @@ model SpecialityDepartment {
 }
 
 model Event {
-  eventId     Int      @id @default(autoincrement())
-  dayNo       Int      @db.Int
-  eventDate   DateTime @db.Date
-  filter      String   @db.VarChar(50)
-  title       String   @db.VarChar(500)
-  descip      String   @db.VarChar(500) // kept to match DB column name
-  dateRange   String   @db.VarChar(500)
-  venue       String   @db.VarChar(500)
-  noOfPeople  Int      @db.Int
-  speakerName String   @db.VarChar(100)
-  overview    String   @db.VarChar(1000)
-  longdesc    String   @db.VarChar(1000)
-  banner      String   @db.VarChar(500)
+  eventId     Int             @id @default(autoincrement())
+  dayNo       Int             @db.Int
+  eventDate   DateTime        @db.Date
+  filter      String          @db.VarChar(50)
+  title       String          @db.VarChar(500)
+  descip      String          @db.VarChar(500) // kept to match DB column name
+  dateRange   String          @db.VarChar(500)
+  venue       String          @db.VarChar(500)
+  noOfPeople  Int             @db.Int
+  speakerName String          @db.VarChar(100)
+  overview    String          @db.VarChar(1000)
+  longdesc    String          @db.VarChar(1000)
+  banner      String          @db.VarChar(500)
+
+  sessions    ChooseSession[] // One event can have many chooseSessions
 
   @@index([eventDate])
   @@index([filter])
   @@map("events")
+}
+
+model ChooseSession {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  createdOn DateTime @default(now())
+
+  event     Event    @relation(fields: [eventId], references: [eventId])
+
+  @@map("chooseSession")
 }
 
 model Employment {
@@ -408,12 +421,4 @@ model Responsibility {
   @@map("responsibility")  // keeps the original table name
 }
 
-model ChooseSession {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  eventId   Int
-  createdOn DateTime @default(now())
-
-  @@map("chooseSession") // keeps the original table name
-}
 
