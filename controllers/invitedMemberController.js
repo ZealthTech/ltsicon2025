@@ -81,13 +81,13 @@ const fetchDetail = async (req, res) => {
       });
     }
 
-    const { userId } = req.body;
+    const { userId, id } = req.body;
 
     // 1. Validation
-    if (!userId) {
+    if (!userId || !id) {
       return res.status(400).json({
         status: false,
-        message: "userId is required",
+        message: "userId and id are required",
       });
     }
     if (Number(userId) !== req.user.userId) {
@@ -96,10 +96,24 @@ const fetchDetail = async (req, res) => {
         message: "Invalid Token",
       });
     }
+
+    const memberDetail = await prisma.invitedMember.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: { responsibilityWork: true },
+    });
+    if (!memberDetail) {
+      return res.status(404).json({
+        status: false,
+        message: "Please provide valid Id",
+      });
+    }
+
     return res.status(200).json({
       status: true,
-      message: "Invited Member list fetched successfully",
-      data: memberListWithFullPhotoURL,
+      message: "Invited Member Detail fetched successfully",
+      data: memberDetail,
     });
   } catch (err) {
     console.error("fetch Invited Member Detail API error:", err.message || err);
