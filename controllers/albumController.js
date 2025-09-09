@@ -37,17 +37,23 @@ const uploadAlbum = async (req, res) => {
         .status(400)
         .json({ status: false, message: "Missing required fields" });
     }
+    let thumbnailPath = null;
+
+    if (req.files.thumbnail && req.files.thumbnail.length > 0) {
+      const file = req.files.thumbnail[0];
+      const relativePath = file.path.split("uploads")[1].replace(/\\/g, "/");
+      thumbnailPath = `/uploads${relativePath}`;
+    }
 
     // Prepare image paths
     const newAlbumImages = req.files.albumImage.map((file) => {
       const relativePath = file.path.split("uploads")[1].replace(/\\/g, "/");
       return `/uploads${relativePath}`;
     });
-
+    console.log("newAlbum", newAlbumImages);
     let album;
 
     if (id) {
-      // Update existing album (append images)
       album = await prisma.photoAlbum.findUnique({
         where: { id: Number(id) },
         include: { albumImage: true },
@@ -59,15 +65,35 @@ const uploadAlbum = async (req, res) => {
           .json({ status: false, message: "Album not found" });
       }
 
-      // Create AlbumImage entries
-      const imageRecords = newAlbumImages.map((path) => ({
-        path,
-        albumId: album.id,
-      }));
+      await prisma.$transaction(async (prisma) => {
+        // Update thumbnail if present
+        if (req.files.thumbnail && req.files.thumbnail.length > 0) {
+          const file = req.files.thumbnail[0];
+          const relativePath = file.path
+            .split("uploads")[1]
+            .replace(/\\/g, "/");
+          const newThumbnail = `/uploads${relativePath}`;
 
-      await prisma.albumImage.createMany({ data: imageRecords });
+          await prisma.photoAlbum.update({
+            where: { id: Number(id) },
+            data: { thumbnail: newThumbnail },
+          });
 
-      // Refetch album with updated images
+          album.thumbnail = newThumbnail;
+        }
+
+        // Add new images
+        const imageRecords = newAlbumImages.map((path) => ({
+          path,
+          albumId: album.id,
+        }));
+
+        if (imageRecords.length > 0) {
+          await prisma.albumImage.createMany({ data: imageRecords });
+        }
+      });
+
+      // Refetch updated album
       album = await prisma.photoAlbum.findUnique({
         where: { id: Number(id) },
         include: { albumImage: true },
@@ -78,7 +104,7 @@ const uploadAlbum = async (req, res) => {
         data: {
           userId: Number(userId),
           title,
-          thumbnail: newAlbumImages[0], // first image as thumbnail
+          thumbnail: thumbnailPath, // first image as thumbnail
           day,
           dateTime,
           ownerName,
@@ -91,7 +117,7 @@ const uploadAlbum = async (req, res) => {
         include: { albumImage: true },
       });
     }
-
+    console.log("thumbnailPath", thumbnailPath);
     // Prepare response with full URLs
     const responseData = {
       ...album,
