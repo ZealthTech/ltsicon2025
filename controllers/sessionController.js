@@ -105,7 +105,7 @@ const joinSession = async (req, res) => {
     });
 
     if (isSessionExist) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "You have already joined this session.",
       });

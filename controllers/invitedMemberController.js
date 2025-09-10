@@ -38,6 +38,8 @@ const fetchMember = async (req, res) => {
         ltsino: true,
         photo: true,
         status: true,
+        state:true,
+        country:true,
         responsibilityWork: {
           select: {
             invitedMemId: true,
