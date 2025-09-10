@@ -2,6 +2,7 @@ require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const BASE_URL_IMG = process.env.BASE_URL_IMG_OLD;
+const BASE_URL_SPEAKER = process.env.BASE_URL_SPEAKER;
 
 const fetchMember = async (req, res) => {
   try {
@@ -57,7 +58,7 @@ const fetchMember = async (req, res) => {
     }
     const memberListWithFullPhotoURL = memberList.map((member) => ({
       ...member,
-      photo: member.photo ? BASE_URL_IMG + member.photo : null,
+      photo: member.photo ? BASE_URL_SPEAKER + member.photo : null,
     }));
     // 3. Response
     return res.status(200).json({
