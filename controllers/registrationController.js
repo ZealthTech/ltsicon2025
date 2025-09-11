@@ -36,6 +36,8 @@ const personalInfo = async (req, res) => {
       phone,
       gender,
       country,
+      city,
+      address,
       medicalCouncilNumber,
       isLTSI,
       LTSINumber,
@@ -50,6 +52,8 @@ const personalInfo = async (req, res) => {
       !phone ||
       !gender ||
       !country ||
+      !city ||
+      !address ||
       !medicalCouncilNumber ||
       !isLTSI
     ) {
@@ -76,6 +80,8 @@ const personalInfo = async (req, res) => {
         phone,
         gender,
         country,
+        city,
+        address,
         medicalCouncilNumber,
         isLTSI,
         LTSINumber,
@@ -91,6 +97,8 @@ const personalInfo = async (req, res) => {
         phone,
         gender,
         country,
+        city,
+        address,
         medicalCouncilNumber,
         isLTSI,
         LTSINumber,

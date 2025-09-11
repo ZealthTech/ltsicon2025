@@ -70,12 +70,22 @@ const homepage = async (req, res) => {
         memberTypeFee: { not: null },
       },
     });
+
+    // Determine if the user is registered based on existence and status
+    let isRegistration = 0;
+
+    if (registrations.length > 0) {
+      // If any booking has status 0, set isRegistration to 0
+      const hasInactive = registrations.some((booking) => booking.status === 0);
+      isRegistration = hasInactive ? 0 : 1;
+    }
+
     const registrationObj = {
-      isRegistration: registrations.length > 0 ? 1 : 0,
-      list: registrations,
+      isRegistration,
       icon: "https://con.bordersandbeyond.in/uploads/icons/icon1.png",
       label: "Registration",
     };
+
     // Check abstracts
     const abstracts = await prisma.absSubmission.findMany({
       where: { userId: Number(userId) },
