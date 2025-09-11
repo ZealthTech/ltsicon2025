@@ -10,6 +10,11 @@ SESSION.post(
   session.fetchSession,
 );
 SESSION.post(
+  "/my-session",
+  JWT.verifyToken([3]),
+  session.mySession,
+);
+SESSION.post(
   "/joined-session",
   JWT.verifyToken([3]),
   session.joinSession,

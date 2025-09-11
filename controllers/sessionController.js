@@ -23,7 +23,9 @@ const fetchSession = async (req, res) => {
         message: "User ID and roleId are required",
       });
     }
+
     console.log("req.body", req.body);
+
     if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
@@ -31,25 +33,40 @@ const fetchSession = async (req, res) => {
       });
     }
 
-    const sessions = await prisma.event.findMany({
-      include: {
-        sessions: true,
-      },
+    // Fetch all events with their sessions
+    const events = await prisma.event.findMany({
     });
-    console.log("sessions", sessions);
+
+    console.log("events", events);
+
+    // Group events by eventDate
+    const grouped = events.reduce((acc, event) => {
+      const dayNo = event.dayNo; 
+
+      if (!acc[dayNo]) {
+        acc[dayNo] = [];
+      }
+      acc[dayNo].push(event);
+
+      return acc;
+    }, {});
+
     res.status(200).json({
       status: true,
-      message: "Session updated successfully!",
-      data: sessions,
+      message: "Sessions fetched successfully!",
+      data: grouped,
     });
+
   } catch (error) {
-    console.error("Session upload error:", error);
+    console.error("Session fetch error:", error);
     res.status(500).json({
       status: false,
       message: error.message || "Internal Server Error",
     });
   }
 };
+
+
 const joinSession = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -133,4 +150,72 @@ const joinSession = async (req, res) => {
   }
 };
 
-module.exports = { fetchSession, joinSession };
+const mySession = async (req, res) => {
+  console.log("first");
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
+
+    const { userId, roleId } = req.body;
+
+    if (!userId || !roleId) {
+      return res.status(400).json({
+        status: false,
+        message: "User ID and roleId are required",
+      });
+    }
+
+    console.log("req.body", req.body);
+
+    if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid Token",
+      });
+    }
+
+    // Find the user's session
+    const userSessions = await prisma.chooseSession.findMany({
+      where: {
+        userId: Number(userId),
+      },
+      include: {
+        event: true,
+      },
+    });
+
+    if (!userSessions || userSessions.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "No sessions found for this user.",
+      });
+    }
+
+    if (!userSessions) {
+      return res.status(404).json({
+        status: false,
+        message: "No session found for this user.",
+      });
+    }
+
+    console.log("userSession", userSessions);
+
+    res.status(200).json({
+      status: true,
+      message: "Session retrieved successfully!",
+      data: userSessions,
+    });
+  } catch (error) {
+    console.error("Session fetch error:", error);
+    res.status(500).json({
+      status: false,
+      message: error.message || "Internal Server Error",
+    });
+  }
+};
+
+module.exports = { fetchSession, joinSession, mySession };

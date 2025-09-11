@@ -704,6 +704,7 @@ const submitForm = async (req, res) => {
 };
 
 const conferenceRegistrationInfo = async (req, res) => {
+  console.log("userrr")
   try {
     if (req.method !== "POST") {
       return res
@@ -745,7 +746,7 @@ const conferenceRegistrationInfo = async (req, res) => {
     if (!userData) {
       return res.status(404).json({ status: false, message: "User not found" });
     }
-
+console.log("userr",userData)
     // Optional: If user exists but bookingId doesn't exist
     if (userData.bookings.length === 0) {
       return res
