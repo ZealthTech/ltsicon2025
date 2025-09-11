@@ -32,6 +32,8 @@ model User {
   specialityDepartment String?   @db.VarChar(255)
   gender               String?   @db.VarChar(50)
   country              String?   @db.VarChar(100)
+  city                 String?   @db.VarChar(100)
+  address              String?   @db.VarChar(100)
   status               Int       @db.Int
   token                String?   @db.VarChar(1000)
   lastLogin            DateTime?
@@ -92,21 +94,21 @@ model SpecialityDepartment {
 }
 
 model Event {
-  eventId     Int             @id @default(autoincrement())
-  dayNo       Int             @db.Int
-  eventDate   DateTime        @db.Date
-  filter      String          @db.VarChar(50)
-  title       String          @db.VarChar(500)
-  descip      String          @db.VarChar(500) // kept to match DB column name
-  dateRange   String          @db.VarChar(500)
-  venue       String          @db.VarChar(500)
-  noOfPeople  Int             @db.Int
-  speakerName String          @db.VarChar(100)
-  overview    String          @db.VarChar(1000)
-  longdesc    String          @db.VarChar(1000)
-  banner      String          @db.VarChar(500)
+  eventId     Int      @id @default(autoincrement())
+  dayNo       Int      @db.Int
+  eventDate   DateTime @db.Date
+  filter      String   @db.VarChar(50)
+  title       String   @db.VarChar(500)
+  descip      String   @db.VarChar(500) // kept to match DB column name
+  dateRange   String   @db.VarChar(500)
+  venue       String   @db.VarChar(500)
+  noOfPeople  Int      @db.Int
+  speakerName String   @db.VarChar(100)
+  overview    String   @db.VarChar(1000)
+  longdesc    String   @db.VarChar(1000)
+  banner      String   @db.VarChar(500)
 
-  sessions    ChooseSession[] // One event can have many chooseSessions
+  sessions ChooseSession[] // One event can have many chooseSessions
 
   @@index([eventDate])
   @@index([filter])
@@ -119,7 +121,7 @@ model ChooseSession {
   eventId   Int
   createdOn DateTime @default(now())
 
-  event     Event    @relation(fields: [eventId], references: [eventId])
+  event Event @relation(fields: [eventId], references: [eventId])
 
   @@map("chooseSession")
 }
@@ -359,16 +361,16 @@ model PaymentDetails {
 }
 
 model PhotoAlbum {
-  id        Int          @id @default(autoincrement())
-  userId    Int?
-  title     String
-  thumbnail String?
-  day       String?
-  dateTime  String?
-  status    Int          @default(1)
-  ownerName String?
-  createdOn DateTime     @default(now())
-  albumImage    AlbumImage[] // relation
+  id         Int          @id @default(autoincrement())
+  userId     Int?
+  title      String
+  thumbnail  String?
+  day        String?
+  dateTime   String?
+  status     Int          @default(1)
+  ownerName  String?
+  createdOn  DateTime     @default(now())
+  albumImage AlbumImage[] // relation
 }
 
 model AlbumImage {
@@ -379,8 +381,9 @@ model AlbumImage {
 
   album PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
 }
+
 model InvitedMember {
-  id        Int                  @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
   state     String?
   country   String?
@@ -388,9 +391,9 @@ model InvitedMember {
   email     String?
   phone     String?
   photo     String?
-  nights    Int?                 @default(2)
-  status    Int                  @default(1)
-  createdOn DateTime             @default(now())
+  nights    Int?     @default(2)
+  status    Int      @default(1)
+  createdOn DateTime @default(now())
 
   // Relation: one invited member can have many responsibilities
   responsibilityWork ResponsibilityWork[]
@@ -399,14 +402,14 @@ model InvitedMember {
 }
 
 model ResponsibilityWork {
-  id           Int           @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   invitedMemId Int
   topic        String
   role         String
   dateTime     String
   location     String
   title        String
-  createdOn    DateTime      @default(now())
+  createdOn    DateTime @default(now())
 
   // Relation back to InvitedMember
   invitedMember InvitedMember @relation(fields: [invitedMemId], references: [id], onDelete: Cascade)
@@ -416,9 +419,7 @@ model ResponsibilityWork {
 
 model Responsibility {
   responsibilityId Int     @id @default(autoincrement())
-  responsibility   String?  // nullable because your MySQL column allows DEFAULT NULL
+  responsibility   String? // nullable because your MySQL column allows DEFAULT NULL
 
-  @@map("responsibility")  // keeps the original table name
+  @@map("responsibility") // keeps the original table name
 }
-
-

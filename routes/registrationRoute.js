@@ -41,5 +41,15 @@ REGISTRATION.post(
   JWT.verifyToken([3]),
   form.conferenceRegistrationInfo
 );
+REGISTRATION.post(
+  "/workshop-list",
+  JWT.verifyToken([3]),
+  form.workshopList
+);
+REGISTRATION.post(
+  "/add-more-workshop",
+  JWT.verifyToken([3]),
+  form.addMoreWorkshop
+);
 
 module.exports = REGISTRATION;
