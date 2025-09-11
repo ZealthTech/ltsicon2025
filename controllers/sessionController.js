@@ -34,29 +34,46 @@ const fetchSession = async (req, res) => {
     }
 
     // Fetch all events with their sessions
-    const events = await prisma.event.findMany({
-    });
+    const events = await prisma.event.findMany({});
 
     console.log("events", events);
 
     // Group events by eventDate
-    const grouped = events.reduce((acc, event) => {
-      const dayNo = event.dayNo; 
+    const grouped = {};
 
-      if (!acc[dayNo]) {
-        acc[dayNo] = [];
-      }
-      acc[dayNo].push(event);
+    await Promise.all(
+      events.map(async (event) => {
+        let isJoined = 0;
 
-      return acc;
-    }, {});
+        const isSessionExist = await prisma.chooseSession.findFirst({
+          where: {
+            userId: Number(userId),
+            eventId: Number(event.eventId),
+          },
+        });
+
+        if (isSessionExist) {
+          isJoined = 1;
+        }
+
+        const dayNo = event.dayNo;
+
+        if (!grouped[dayNo]) {
+          grouped[dayNo] = [];
+        }
+
+        grouped[dayNo].push({
+          ...event,
+          isJoined,
+        });
+      })
+    );
 
     res.status(200).json({
       status: true,
       message: "Sessions fetched successfully!",
       data: grouped,
     });
-
   } catch (error) {
     console.error("Session fetch error:", error);
     res.status(500).json({
@@ -65,7 +82,6 @@ const fetchSession = async (req, res) => {
     });
   }
 };
-
 
 const joinSession = async (req, res) => {
   try {
@@ -136,6 +152,10 @@ const joinSession = async (req, res) => {
       },
     });
 
+    const updatedJoinedSession = {
+      ...joinedSession,
+      status: 1,
+    };
     res.status(200).json({
       status: true,
       message: "Session joined successfully!",
