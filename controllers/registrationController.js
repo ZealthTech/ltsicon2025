@@ -826,7 +826,134 @@ const workshopList = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
+const newWorkshop = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res
+        .status(405)
+        .json({ status: false, message: "Method Not Allowed" });
+    }
 
+    const { userId, bookingId, workshops = [] } = req.body; // workshops = array of { name, fee }
+
+    // 1. Validation
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ status: false, message: "userId is required" });
+    }
+    if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid Token",
+      });
+    }
+
+    // 2. User check
+    const user = await prisma.user.findUnique({
+      where: { userId: Number(userId) },
+    });
+    if (!user)
+      return res.status(401).json({ status: false, message: "User not found" });
+
+    // 3. Booking check
+    let booking = await prisma.booking.findFirst({
+      where: { userId: Number(userId) },
+    });
+    if (!booking)
+      return res
+        .status(400)
+        .json({ status: false, message: "No booking found for this user" });
+
+    // 4. Payment check
+    if (
+      !booking.memberType ||
+      !booking.memberTypeFee ||
+      booking.memberTypeFee === "0"
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Pay conference fee first to choose workshop",
+      });
+    }
+
+    // 5. Insert workshops
+    const bookingNumber = await generateBookingNumber();
+    let insertedWorkshops = [];
+    let totalWorkshopFee = 0;
+
+    if (bookingId && bookingId > 0) {
+      // Existing bookingId provided
+      if (workshops.length > 0) {
+        insertedWorkshops = await Promise.all(
+          workshops.map(({ name, fee }) =>
+            prisma.bookingDetail.create({
+              data: {
+                user: { connect: { userId: booking.userId } },
+                booking: { connect: { bookingId: Number(bookingId) } },
+                workshop: name,
+                workshopFee: Number(fee),
+              },
+            })
+          )
+        );
+      }
+    } else {
+      // No bookingId -> create new booking first
+      if (workshops.length > 0) {
+        booking = await prisma.booking.create({
+          data: {
+            userId: Number(userId),
+            bookingNumber,
+            createdOn: new Date(),
+          },
+        });
+
+        insertedWorkshops = await Promise.all(
+          workshops.map(({ name, fee }) =>
+            prisma.bookingDetail.create({
+              data: {
+                user: { connect: { userId: booking.userId } },
+                booking: { connect: { bookingId: booking.bookingId } },
+                workshop: name,
+                workshopFee: Number(fee),
+              },
+            })
+          )
+        );
+
+        // 6. Calculate total workshop fee
+        totalWorkshopFee = workshops.reduce(
+          (sum, { fee }) => sum + Number(fee || 0),
+          0
+        );
+
+        // 7. Update booking table with totalPayment
+        booking = await prisma.booking.update({
+          where: { bookingId: booking.bookingId },
+          data: {
+            totalPayment: Number(totalWorkshopFee), // assuming `totalPayment` column exists
+          },
+        });
+      }
+    }
+
+    // 7. Response
+    return res.status(200).json({
+      status: true,
+      message:
+        insertedWorkshops.length > 0
+          ? "Workshop(s) added successfully"
+          : "No workshops provided",
+      data: { insertedWorkshops, totalWorkshopFee },
+    });
+  } catch (err) {
+    console.error("Workshop info error:", err.message || err);
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal Server Error" });
+  }
+};
 
 module.exports = {
   personalInfo,
@@ -838,4 +965,5 @@ module.exports = {
   conferenceRegistrationInfo,
   submitForm,
   workshopList,
+  newWorkshop,
 };
