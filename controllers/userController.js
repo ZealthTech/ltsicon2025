@@ -327,8 +327,17 @@ const signupForm = async (req, res) => {
       });
     }
     console.log("user", user);
+
     const token = jwt.sign(
-      { email: user.email, roleId: user.roleId },
+      {
+        userId: user.userId,
+        email:user.email,
+        role: user.role?.name || null,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        roleId: user.roleId,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "180d" }
     );

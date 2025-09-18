@@ -6,6 +6,7 @@ const BASE_URL_IMG = process.env.BASE_URL_IMG;
 const homepage = async (req, res) => {
   try {
     const { userId, roleId } = req.body;
+    console.log("lla",req.body)
 
     if (!userId || !roleId) {
       return res.status(400).json({
@@ -73,6 +74,7 @@ const homepage = async (req, res) => {
 
     // Determine if the user is registered based on existence and status
     let isRegistration = 0;
+    let isPaymentDone = 0;
 
     if (registrations.length > 0) {
       // If any booking has status 0, set isRegistration to 0

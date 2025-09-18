@@ -43,7 +43,8 @@ const verifyToken = (allowedRoles = []) => {
         }
         return res.status(401).json({ error: "Invalid token" });
       }
-
+console.log("decoded",token)
+console.log("decoded",decoded)
       // Fetch user from DB based on decoded userId
       const user = await prisma.user.findUnique({
         where: { userId: Number(decoded.userId) },
