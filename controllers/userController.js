@@ -436,7 +436,7 @@ const signupForm = async (req, res) => {
       from: `"LTSICON2025" <${FROM_MAIL}>`,
       to: updatedUser.email,
       bcc: MAIL_BCC,
-      subject: `LTSICON2025 - Your Account Has Been Created successfully`,
+      subject: `LTSICON2025 - Your account has been created successfully`,
       html,
       // text: `Your OTP for password reset is: ${otp}.`,
     };

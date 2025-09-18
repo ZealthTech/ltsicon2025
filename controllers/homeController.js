@@ -78,9 +78,9 @@ const homepage = async (req, res) => {
 
     if (registrations.length > 0) {
       // If any booking has status 0, set isRegistration to 0
-      const hasInactive = registrations.some((booking) => booking.status === 0);
+      const hasInactive = registrations.some((booking) => booking.status === 1);
       isRegistration = 1;
-      isPaymentDone = hasInactive ? 0 : 1;
+      isPaymentDone = hasInactive ? 1 : 0;
     }
 
     const registrationObj = {
