@@ -86,7 +86,7 @@ const homepage = async (req, res) => {
     const registrationObj = {
       isRegistration,
       isPaymentDone,
-      icon: "https://con.bordersandbeyond.in/uploads/icons/icon1.png",
+      icon: "https://con.bordersandbeyond.in/uploads/icons/Register.png",
       label: "Registration",
     };
 
@@ -97,7 +97,7 @@ const homepage = async (req, res) => {
     const abstractObj = {
       isAbstractSubmission: abstracts.length > 0 ? 1 : 0,
       list: abstracts,
-      icon: "https://con.bordersandbeyond.in/uploads/icons/icon2.png",
+      icon: "https://con.bordersandbeyond.in/uploads/icons/submission.png",
       label: "Abstract Submission",
     };
     //  Check workshops
@@ -111,19 +111,19 @@ const homepage = async (req, res) => {
     const workshopObj = {
       isWorkshop: workshopsList.length > 0 ? 1 : 0,
       list: workshopsList,
-      icon: "https://con.bordersandbeyond.in/uploads/icons/icon1.png",
+      icon: "https://con.bordersandbeyond.in/uploads/icons/workshop.png",
       label: "Workshop",
     };
     const allSessionsObj = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/icon2.png",
+      icon: "https://con.bordersandbeyond.in/uploads/icons/session.png",
       label: "All Sessions",
     };
     const albumObj = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/icon1.png",
+      icon: "https://con.bordersandbeyond.in/uploads/icons/album.png",
       label: "Photo Album",
     };
     const speakersObj = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/icon2.png",
+      icon: "https://con.bordersandbeyond.in/uploads/icons/Speaker.png",
       label: "Faculty & Speakers",
     };
 
