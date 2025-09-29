@@ -9,6 +9,6 @@ NEWS.post(
   FILE.newsImageUpload,
   news.newsUpload
 );
-NEWS.post("/fetch-news-detail", news.fetchNewsDetail);
+NEWS.post("/fetch-news-detail", JWT.verifyToken([3]), news.fetchNewsDetail);
 
 module.exports = NEWS;
