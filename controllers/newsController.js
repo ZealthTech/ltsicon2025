@@ -88,14 +88,14 @@ const fetchNewsDetail = async (req, res) => {
         message: "News not found",
       });
     }
-
+    const updatedData = { ...news, newsImage: news.newsImage ? `${BASE_URL_IMG}${news.newsImage}` : null };
     console.log("news", news);
 
     // success
     res.status(200).json({
       status: true,
       message: "News fetched successfully",
-      data: news,
+      data: updatedData,
     });
   } catch (error) {
     res.status(500).json({
