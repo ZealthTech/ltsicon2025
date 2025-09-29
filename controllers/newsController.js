@@ -75,8 +75,12 @@ const fetchNewsDetail = async (req, res) => {
       });
     }
 
+    console.log("id", id);
+
     // fetch news from db
-    const news = await prisma.news.findFirst(id);
+    const news = await prisma.news.findUnique({
+      where: { id: Number(id) }, // cast to Number if id is int in schema
+    });
 
     if (!news) {
       return res.status(404).json({
@@ -84,6 +88,8 @@ const fetchNewsDetail = async (req, res) => {
         message: "News not found",
       });
     }
+
+    console.log("news", news);
 
     // success
     res.status(200).json({
@@ -98,5 +104,6 @@ const fetchNewsDetail = async (req, res) => {
     });
   }
 };
+
 
 module.exports = { newsUpload, fetchNewsDetail };
