@@ -335,13 +335,18 @@ model Banner {
 }
 
 model News {
-  id          Int      @id @default(autoincrement()) @db.Int
-  title       String   @db.VarChar(100)
-  description String   @db.VarChar(10000)
-  newsImage   String   @db.VarChar(255)
-  sequence    Int?     @db.Int
-  status      Int      @default(1) @db.Int // 1 = active, 0 = inactive
-  createdOn   DateTime @default(now()) @db.DateTime(0)
+  id            Int      @id @default(autoincrement()) @db.Int
+  title         String   @db.VarChar(100)
+  description   String   @db.VarChar(10000)
+  newsImage     String   @db.VarChar(255)
+  sequence      Int?     @db.Int
+  speakerName   String?  @db.VarChar(255)
+  speakerDetail String?  @db.VarChar(500)
+  eventDate      String?  @db.VarChar(100)
+  time          String?  @db.VarChar(100)
+  venue         String?  @db.VarChar(255)
+  status        Int      @default(1) @db.Int // 1 = active, 0 = inactive
+  createdOn     DateTime @default(now()) @db.DateTime(0)
 
   @@map("news")
 }

@@ -23,7 +23,7 @@ const newsUpload = async (req, res) => {
       });
     }
 
-    const { title, description, sequence, status } = req.body;
+    const { title, description, speakerName, speakerDetail, eventDate, time, venue, sequence, status } = req.body;
 
     const absolutePath = req.files.newsImage[0].path;
     // Convert to relative path starting from "uploads"
@@ -37,6 +37,11 @@ const newsUpload = async (req, res) => {
       data: {
         title,
         description,
+        speakerName,
+        speakerDetail,
+        eventDate,
+        time,
+        venue,
         newsImage: newsImageDB,
         sequence: sequence ? Number(sequence) : null,
         status: status ? Number(status) : 1,
