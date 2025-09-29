@@ -9,6 +9,6 @@ NEWS.post(
   FILE.newsImageUpload,
   news.newsUpload
 );
-NEWS.post("/fetch-news", news.fetchNews);
+NEWS.post("/fetch-news-detail", news.fetchNewsDetail);
 
 module.exports = NEWS;

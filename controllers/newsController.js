@@ -58,15 +58,40 @@ const newsUpload = async (req, res) => {
     });
   }
 };
-const fetchNews = async (req, res) => {
+const fetchNewsDetail = async (req, res) => {
   try {
-    res.send("LTSI is Working Fine");
+    const { id } = req.body;
+
+    // validate id
+    if (!id) {
+      return res.status(400).json({
+        status: false,
+        message: "News ID is required",
+      });
+    }
+
+    // fetch news from db
+    const news = await prisma.news.findFirst(id);
+
+    if (!news) {
+      return res.status(404).json({
+        status: false,
+        message: "News not found",
+      });
+    }
+
+    // success
+    res.status(200).json({
+      status: true,
+      message: "News fetched successfully",
+      data: news,
+    });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       status: false,
       message: error.message,
     });
   }
 };
 
-module.exports = { newsUpload, fetchNews };
+module.exports = { newsUpload, fetchNewsDetail };
