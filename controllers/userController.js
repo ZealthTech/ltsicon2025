@@ -1101,12 +1101,13 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    if (req.method !== "POST") {
+    if (req.method !== "DELETE") {
       return res.status(405).json({
         status: false,
         message: "Method Not Allowed",
       });
     }
+    console.log("login")
 
     const { userId, roleId } = req.body;
     if (!userId || !roleId) {
@@ -1128,11 +1129,16 @@ const deleteUser = async (req, res) => {
         message: "User not found"
       })
     }
-    await prisma.user.delete({
-      where: {
-        userId: Number(userId)
-      }
-    })
+    await prisma.chooseSession.deleteMany({ where: { userId: Number(userId) } });
+    await prisma.employment.deleteMany({ where: { userId: Number(userId) } });
+    await prisma.bookingDetail.deleteMany({ where: { userId: Number(userId) } });
+    await prisma.booking.deleteMany({ where: { userId: Number(userId) } });
+    await prisma.absSubmission.deleteMany({ where: { userId: Number(userId) } });
+    await prisma.photoAlbum.deleteMany({ where: { userId: Number(userId) } });
+    const deletedUser = await prisma.user.delete({
+      where: { userId: Number(userId) },
+    });
+    console.log(deletedUser)
     return res.status(200).json({
       status: true,
       message: "User deleted successfully"

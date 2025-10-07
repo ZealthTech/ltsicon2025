@@ -13,7 +13,7 @@ user.post("/login-email-otp-verify", USER.loginwithEmailOtpVerify);
 
 user.post("/login-ltsinumber-send-otp", USER.loginwithLtsiNumberSendOtp);
 user.post("/login-ltsinumber-otp-verify", USER.loginwithLtsiNumberOtpVerify);
-
+console.log("first")
 user.delete("/delete-user", USER.deleteUser);
 
 module.exports = user;
