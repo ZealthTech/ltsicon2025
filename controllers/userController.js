@@ -482,7 +482,7 @@ const loginwithEmailSendOtp = async (req, res) => {
         message: "Email and roleId are required",
       });
     }
-console.log("emial",email)
+    console.log("emial", email)
     // 1. Find user by email and roleId
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -506,7 +506,7 @@ console.log("emial",email)
     // 3. Save OTP to user table
     const updatedUser = await prisma.user.update({
       where: { userId: existingUser.userId },
-      data: {  otp: email === "raj.techknowten@gmail.com" ? 1234 : Number(otp), otpExpiry },
+      data: { otp: email === "raj.techknowten@gmail.com" ? 1234 : Number(otp), otpExpiry },
       include: { role: true },
     });
 
@@ -729,7 +729,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
 
       await prisma.user.update({
         where: { userId: existingUser.userId },
-        data: {  otp: existingUser.email === "raj.techknowten@gmail.com" ? 1234 : Number(otp), otpExpiry },
+        data: { otp: existingUser.email === "raj.techknowten@gmail.com" ? 1234 : Number(otp), otpExpiry },
       });
 
       const html = `
@@ -1099,6 +1099,51 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
+
+    const { userId, roleId } = req.body;
+    if (!userId || !roleId) {
+      return res.status(400).json({
+        status: false,
+        message: "userId and roleId are required"
+      })
+    }
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: Number(userId),
+        roleId: Number(roleId)
+      }
+    })
+    if (!user) {
+      return res.status(401).json({
+        status: false,
+        message: "User not found"
+      })
+    }
+    await prisma.user.delete({
+      where: {
+        userId: Number(userId)
+      }
+    })
+    return res.status(200).json({
+      status: true,
+      message: "User deleted successfully"
+    })
+  } catch (err) {
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+}
 module.exports = {
   signupForm,
   signupSendOtp,
@@ -1107,4 +1152,5 @@ module.exports = {
   loginwithEmailOtpVerify,
   loginwithLtsiNumberSendOtp,
   loginwithLtsiNumberOtpVerify,
+  deleteUser
 };
