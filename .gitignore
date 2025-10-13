@@ -1,4 +1,6 @@
 .env
 /node_modules
 /uploads
+
+/db
 node_modules
