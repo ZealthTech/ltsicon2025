@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
 var admin = require("firebase-admin");
-var serviceAccount = require("../db/ltsicon2025-db871-firebase-adminsdk-fbsvc-69cfd71598.json");
+var serviceAccount = require("../dbbb/ltsicon2025-db871-firebase-adminsdk-fbsvc-69cfd71598.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -18,7 +18,7 @@ const adminSendNotification = async (req, res) => {
   try {
     var usr = req.body.getUser;
 
-    
+
 
     var title ="notification title";
     var body ="notification body ";
