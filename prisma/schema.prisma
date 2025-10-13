@@ -36,19 +36,20 @@ model User {
   address              String?   @db.VarChar(100)
   status               Int       @db.Int
   token                String?   @db.VarChar(1000)
+  fcmAndToken          String?   @db.VarChar(1000)
+  fcmIosToken          String?   @db.VarChar(1000)
+  andLogin             Int?   @db.Int @default(0)
+  iosLogin             Int?   @db.Int @default(0)
   lastLogin            DateTime?
   createdOn            DateTime  @default(now()) @db.Timestamp(0)
-
   // Role FK (already present)
   roleId Int?  @db.Int
   role   Role? @relation(fields: [roleId], references: [id], map: "fk_users_roleId")
-
   // Reverse relations: one user can have many of these
   employments    Employment[]
   absSubmissions AbsSubmission[]
   bookingDetails BookingDetail[]
   bookings       Booking[]
-
   // Practical indexes (safe with existing data)
   @@index([status])
   @@index([roleId])
@@ -91,6 +92,28 @@ model SpecialityDepartment {
   @@index([status])
   @@index([sequence])
   @@map("specialityDepartment")
+}
+
+model Notification {
+  notificationId Int      @id @default(autoincrement())
+  sendId         String?  @db.VarChar(255)
+  type           String?  @db.VarChar(255)
+  typeId         String?  @db.VarChar(255)
+  title          String?  @db.VarChar(255)
+  message        String?  @db.Text
+  htmlMessage    String?  @db.Text 
+  image          String?  @db.Text
+  toId           String?  @db.VarChar(255)
+  totalCount     Int?     @default(0)
+  status         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @db.Timestamp(0)
+
+  // Optional indexes for faster queries (customize if needed)
+  @@index([toId])
+  @@index([status])
+
+  // Map model name to actual table name
+  @@map("lft_notification")
 }
 
 model Event {

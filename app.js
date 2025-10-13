@@ -3,9 +3,13 @@ const helmet = require("helmet");
 const xssClean = require("xss-clean");
 const cors = require("cors");
 const router = require("./routes");
+
 require("dotenv").config();
 
 const app = express();
+
+// initialize cache middleware
+
 const PORT = process.env.PORT || 3050;
 
 app.use(helmet());

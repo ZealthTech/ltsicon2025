@@ -35,6 +35,7 @@ const verifyToken = (allowedRoles = []) => {
 
       // Verify token
       let decoded;
+      console.log("decoded1-",decoded);
       try {
         decoded = jwt.verify(token, JWT_SECRET);
       } catch (err) {

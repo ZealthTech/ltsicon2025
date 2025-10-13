@@ -19,6 +19,9 @@ const BASE_URL_LTSIMEMBER = process.env.BASE_URL_LTSIMEMBER;
 const BASE_URL_IMG_LTSIMEMBER = process.env.BASE_URL_IMG_LTSIMEMBER;
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
+
+
+
 function generateOtp() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
@@ -35,6 +38,116 @@ const transporter = nodemailer.createTransport({
   },
 });
 // Express route handler
+
+// update FCM 
+const updateFCM = async(req,res) => {
+  
+try {
+
+   if (req.method !== "POST") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
+    const { userId, FCM, deviceId } = req.body;
+console.log("req.body",req.body)
+console.log("req.body",req.user)
+    // Basic validation
+    if (!userId || !FCM || (deviceId === undefined || deviceId === null)) {
+      return res.status(400).json({
+        status: false,
+        message: "All fields (userId, FCM, deviceId) are required",
+      });
+    }
+
+    // Ensure deviceId is numeric (1 => Android, 2 => iOS)
+    const devId = Number(deviceId);
+    if (![1, 2].includes(devId)) {
+      return res.status(400).json({
+        status: false,
+        message: "deviceId must be 1 (Android) or 2 (iOS)",
+      });
+    }
+console.log(req.user,"user",req.user.userId);
+    // Owner check: token user vs requested userId
+    if (Number(userId) !== Number(req.user && req.user.userId)) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid Token",
+      });
+    }
+
+    // Basic sanitization / sanity checks for FCM token length
+    if (typeof FCM !== "string" || FCM.length === 0  ) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid FCM token",
+      });
+    }
+
+    // Confirm user exists
+    const user = await prisma.user.findUnique({
+      where: { userId: Number(userId) },
+      select: { userId: true, fcmAndToken: true, fcmIosToken: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+      });
+    }
+
+    // Decide update payload depending on device type
+    const data = {};
+    if (devId === 1) {
+      // Android
+      data.fcmAndToken = FCM;
+      // mark android login flag
+      data.andLogin = 1;
+      // Optionally update lastLogin timestamp
+      data.lastLogin = new Date();
+    } else {
+      // iOS
+      data.fcmIosToken = FCM;
+      data.iosLogin = 1;
+      data.lastLogin = new Date();
+    }
+
+    // Update the user record
+    const updated = await prisma.user.update({
+      where: { userId: Number(userId) },
+      data,
+      select: {
+        userId: true,
+        fcmAndToken: true,
+        fcmIosToken: true,
+        andLogin: true,
+        iosLogin: true,
+        lastLogin: true,
+      },
+    });
+
+    // Optionally clear or update cache if you cache user objects
+    // nodeCache.del(`user_${userId}`);
+
+    return res.status(200).json({
+      status: true,
+      message: "FCM token updated successfully",
+      data: updated,
+    });
+
+
+  } catch (err) {
+    console.error("signupSendOtp error:", err.message || err);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+  
+};
 // Send OTP API
 const signupSendOtp = async (req, res) => {
   try {
@@ -1158,5 +1271,6 @@ module.exports = {
   loginwithEmailOtpVerify,
   loginwithLtsiNumberSendOtp,
   loginwithLtsiNumberOtpVerify,
-  deleteUser
+  deleteUser,
+  updateFCM
 };
