@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const BASE_URL_IMG = process.env.BASE_URL_IMG_OLD;
 const BASE_URL_SPEAKER = process.env.BASE_URL_SPEAKER;
-
+const nodeCache = require("../middleware/cache.js");
 const fetchMember = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -28,39 +28,51 @@ const fetchMember = async (req, res) => {
         message: "Invalid Token",
       });
     }
-    // 2. Fetch memberList with authors + user info
-    const memberList = await prisma.invitedMember.findMany({
-      where: {
-        status: 1,
-      },
-      select: {
-        id: true,
-        name: true,
-        ltsino: true,
-        photo: true,
-        status: true,
-        state:true,
-        country:true,
-        responsibilityWork: {
-          select: {
-            invitedMemId: true,
-            role: true,
-          },
-        },
-      },
-    });
+
+    const cacheKey = "memberList_" + userId;
+
+    // 2. Check cache first
+    let memberList = nodeCache.get(cacheKey);
+    //  let memberList = nodeCache.get(cacheKey);
 
     if (!memberList) {
-      return res.status(404).json({
-        status: false,
-        message: "No memberList found for this user",
+      // If not cached, fetch from DB
+      memberList = await prisma.invitedMember.findMany({
+        where: { status: 1 },
+        select: {
+          id: true,
+          name: true,
+          ltsino: true,
+          photo: true,
+          status: true,
+          state: true,
+          country: true,
+          responsibilityWork: {
+            select: {
+              invitedMemId: true,
+              role: true,
+            },
+          },
+        },
       });
+
+      if (!memberList || memberList.length === 0) {
+        return res.status(404).json({
+          status: false,
+          message: "No memberList found for this user",
+        });
+      }
+
+      // Save to cache
+      nodeCache.set(cacheKey, memberList, 60 * 5); // cache for 5 minutes
     }
+
+    // 3. Transform response (add full photo URL)
     const memberListWithFullPhotoURL = memberList.map((member) => ({
       ...member,
       photo: member.photo ? BASE_URL_SPEAKER + member.photo : null,
     }));
-    // 3. Response
+
     return res.status(200).json({
       status: true,
       message: "Invited Member list fetched successfully",

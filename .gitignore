@@ -1,4 +1,6 @@
 .env
 /node_modules
 /uploads
+/db
+dbbb/*.json
 node_modules
