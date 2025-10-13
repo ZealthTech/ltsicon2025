@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
 var admin = require("firebase-admin");
-var serviceAccount = require("../dbbb/ltsicon2025-db871-firebase-adminsdk-fbsvc-69cfd71598.json");
+var serviceAccount = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
