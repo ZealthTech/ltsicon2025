@@ -17,6 +17,7 @@ user.post("/login-ltsinumber-send-otp", USER.loginwithLtsiNumberSendOtp);
 user.post("/login-ltsinumber-otp-verify", USER.loginwithLtsiNumberOtpVerify);
 user.post("/update-fcm", JWT.verifyToken([3]), USER.updateFCM);
 user.post("/send-notification",  Notify.adminSendNotification);
+user.post("/list-notification",  Notify.userNotificationList);
 console.log("first")
 user.delete("/delete-user", USER.deleteUser);
 

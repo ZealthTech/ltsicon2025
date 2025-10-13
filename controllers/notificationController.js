@@ -16,107 +16,204 @@ const dtt = require("date-and-time");
 
 const adminSendNotification = async (req, res) => {
   try {
-    var usr = req.body.getUser;
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
 
+    const { userId, roleId, title, desc, fcmUser } = req.body;
 
+    // 🧩 Validate incoming data
+    if (!userId || !roleId || !Array.isArray(fcmUser) || fcmUser.length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "userId, roleId and fcmUser array are required",
+      });
+    }
 
-    var title ="notification title";
-    var body ="notification body ";
-    var userId=1;
+    console.log("📦 Payload received:", { userId, roleId, title, desc, fcmUser });
 
-        const fcmUser = {
-        fcmIosToken: "cNBgcVqKH0xdrbC3jAJxbJ:APA91bFstPNb3-2AhWkV-WBtoBAXJh6yYgiKRHGUL1wZgP8JStf6dGZKGMW6iIKjRtphWPflh5RwR7ZguWpMrKDkJCppMXOkjAu9gD-LnNh4_p8NRkeoQVQ",
-        iosLogin:1
-        };
+    // 🧠 Fetch users’ FCM tokens from DB
+    const users = await prisma.user.findMany({
+      where: {
+        userId: { in: fcmUser },
+        status: 1, // only active users
+      },
+      select: {
+        userId: true,
+        firstName: true,
+        fcmAndToken: true,
+        fcmIosToken: true,
+        andLogin: true,
+        iosLogin: true,
+      },
+    });
 
-            // Array to store the tokens
-            var tokens = [];
-            // Assuming userDetail[0] is defined
-         
-            console.log('fcmUser',fcmUser);
-            if (fcmUser.fcmAndToken && fcmUser.andLogin === 1) {
-              tokens.push(fcmUser.fcmAndToken);
-            }
+    if (users.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "No valid users found for given IDs",
+      });
+    }
 
-            if (fcmUser.fcmIosToken && fcmUser.iosLogin === 1) {
-              tokens.push(fcmUser.fcmIosToken);
-            }
+    // 🧩 Collect valid tokens
+    let tokens = [];
 
-            if (tokens.length > 0) {
-              const pushMessage = {
-                notification: {
-                  title: title,
-                  body: body,
-                },
-                data: {
-                  userId: String(userId),
-                  orderId: "Order",
-                  orderProductId: "Demo",
-                  type: "General",
-                }, // Optional payload
-              };
-              //console.log("pushMessage",pushMessage);
-              // Retry logic for each token
-              var maxRetries = 3;
+    users.forEach((user) => {
+      if (user.fcmAndToken && user.andLogin === 1) {
+        tokens.push(user.fcmAndToken);
+      }
+      if (user.fcmIosToken && user.iosLogin === 1) {
+        tokens.push(user.fcmIosToken);
+      }
+    });
 
-              for (let i = 0; i < tokens.length; i++) {
-                let token = tokens[i];
-                var attempts = 0;
-                var sentSuccessfully = false;
+    if (tokens.length === 0) {
+      return res.status(200).json({
+        status: true,
+        message: "No valid FCM tokens to send notifications.",
+      });
+    }
 
-                while (attempts < maxRetries && !sentSuccessfully) {
-                  attempts++;
-                  console.log(
-                    `Attempt ${attempts}: Sending notification to token ${token}...`
-                  );
+    console.log(`🚀 Sending notification to ${tokens.length} devices...`);
 
-                  try {
-                    // Send notification to the current token
-                    let response = await messaging.send({
-                      token: token,
-                      ...pushMessage,
-                    });
+    // 🧾 Push message template
+    const pushMessage = {
+      notification: {
+        title: title,
+        body: desc,
+      },
+      data: {
+        userId: String(userId),
+        type: "General",
+      },
+    };
 
-                    console.log(
-                      `Notification sent successfully to token ${token}.`
-                    );
-                    sentSuccessfully = true; // Mark as successful to stop retrying
-                  } catch (error) {
-                    console.error(
-                      `Attempt ${attempts}: Error sending notification to token ${token}:`,
-                      error
-                    );
+    const maxRetries = 3;
 
-                    if (attempts < maxRetries) {
-                      console.log(
-                        `Retrying due to error... (${attempts}/${maxRetries})`
-                      );
-                    }
-                  }
-                }
+    // 🧨 Send notification with retry logic
+    for (const token of tokens) {
+      let attempts = 0;
+      let sentSuccessfully = false;
 
-                if (!sentSuccessfully) {
-                  console.log(
-                    `Failed to send notification to token ${token} after ${maxRetries} attempts.`
-                  );
-                }
-              }
-            } else {
-              console.log("No valid tokens to send notifications.");
-            }
-          
-         
-                
-           
-        
-       
-   
-  } catch (e) {
-    console.log(e);
+      while (attempts < maxRetries && !sentSuccessfully) {
+        attempts++;
+        console.log(`📤 Attempt ${attempts} — Sending to token: ${token}`);
+
+        try {
+          await messaging.send({
+            token,
+            ...pushMessage,
+          });
+
+          console.log(`✅ Successfully sent to token: ${token}`);
+          sentSuccessfully = true;
+        } catch (error) {
+          console.error(`❌ Error sending to ${token} (Attempt ${attempts}):`, error.message);
+          if (attempts < maxRetries) console.log("🔁 Retrying...");
+        }
+      }
+
+      if (!sentSuccessfully) {
+        console.log(`⚠️ Failed to send notification after ${maxRetries} attempts for ${token}`);
+      }
+    }
+    const notificationsToCreate = users.map((user) => ({
+      senderId: userId,         // Admin who sent it
+      toId: user.userId,      // Target user
+      title,
+      message: desc,
+      htmlMessage: `<p>${desc}</p>`,
+      type: "General",
+      typeId: "0",
+      image: null,
+      totalCount: 1,
+      status: true,
+    }));
+
+    await prisma.notification.createMany({
+      data: notificationsToCreate,
+      skipDuplicates: true, // avoids duplicates on accidental re-run
+    });
+    return res.status(200).json({
+      status: true,
+      message: `Notifications processed for ${tokens.length} tokens.`,
+      data: users
+    });
+  } catch (error) {
+    console.error("🔥 Error in adminSendNotification:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const userNotificationList = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
+
+    const { userId, roleId } = req.body;
+
+    if (!userId || !roleId) {
+      return res.status(400).json({
+        status: false,
+        message: "Missing required fields",
+      });
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        userId: Number(userId),
+        roleId: Number(roleId),
+      },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+      });
+    }
+
+    const notifications = await prisma.notification.findMany({
+      where: {
+        toId: Number(existingUser.userId), 
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (notifications.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "No notifications found",
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Notification list fetched successfully",
+      data: notifications,
+    });
+  } catch (error) {
+    console.error("🔥 Error in userNotificationList:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 };
 
 
-
-
-module.exports = { adminSendNotification };
+module.exports = { adminSendNotification, userNotificationList };

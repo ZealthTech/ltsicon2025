@@ -16,40 +16,41 @@ model Role {
 }
 
 model User {
-  userId               Int       @id @default(autoincrement())
-  title                String?   @db.VarChar(50)
-  firstName            String?   @db.VarChar(255)
-  lastName             String?   @db.VarChar(255)
-  email                String    @unique @db.VarChar(100)
-  phone                String?   @db.VarChar(15)
-  profileImage         String?   @db.VarChar(1000)
-  password             String?   @db.VarChar(255)
-  otp                  Int?      @db.Int
-  otpExpiry            DateTime? @db.DateTime(0)
-  isLTSI               String?   @db.VarChar(50)
-  LTSINumber           String?   @db.VarChar(100)
-  medicalCouncilNumber String?   @db.VarChar(100)
-  specialityDepartment String?   @db.VarChar(255)
-  gender               String?   @db.VarChar(50)
-  country              String?   @db.VarChar(100)
-  city                 String?   @db.VarChar(100)
-  address              String?   @db.VarChar(100)
-  status               Int       @db.Int
-  token                String?   @db.VarChar(1000)
-  fcmAndToken          String?   @db.VarChar(1000)
-  fcmIosToken          String?   @db.VarChar(1000)
-  andLogin             Int?   @db.Int @default(0)
-  iosLogin             Int?   @db.Int @default(0)
+  userId               Int             @id @default(autoincrement())
+  title                String?         @db.VarChar(50)
+  firstName            String?         @db.VarChar(255)
+  lastName             String?         @db.VarChar(255)
+  email                String          @unique @db.VarChar(100)
+  phone                String?         @db.VarChar(15)
+  profileImage         String?         @db.VarChar(1000)
+  password             String?         @db.VarChar(255)
+  otp                  Int?            @db.Int
+  otpExpiry            DateTime?       @db.DateTime(0)
+  isLTSI               String?         @db.VarChar(50)
+  LTSINumber           String?         @db.VarChar(100)
+  medicalCouncilNumber String?         @db.VarChar(100)
+  specialityDepartment String?         @db.VarChar(255)
+  gender               String?         @db.VarChar(50)
+  country              String?         @db.VarChar(100)
+  city                 String?         @db.VarChar(100)
+  address              String?         @db.VarChar(100)
+  status               Int             @db.Int
+  token                String?         @db.VarChar(1000)
+  fcmAndToken          String?         @db.VarChar(1000)
+  fcmIosToken          String?         @db.VarChar(1000)
+  andLogin             Int?            @default(0) @db.Int
+  iosLogin             Int?            @default(0) @db.Int
   lastLogin            DateTime?
-  createdOn            DateTime  @default(now()) @db.Timestamp(0)
+  createdOn            DateTime        @default(now()) @db.Timestamp(0)
   // Role FK (already present)
-  roleId Int?  @db.Int
-  role   Role? @relation(fields: [roleId], references: [id], map: "fk_users_roleId")
+  roleId               Int?            @db.Int
+  role                 Role?           @relation(fields: [roleId], references: [id], map: "fk_users_roleId")
   // Reverse relations: one user can have many of these
-  employments    Employment[]
-  absSubmissions AbsSubmission[]
-  bookingDetails BookingDetail[]
-  bookings       Booking[]
+  employments          Employment[]
+  absSubmissions       AbsSubmission[]
+  bookingDetails       BookingDetail[]
+  bookings             Booking[]
+
   // Practical indexes (safe with existing data)
   @@index([status])
   @@index([roleId])
@@ -96,14 +97,14 @@ model SpecialityDepartment {
 
 model Notification {
   notificationId Int      @id @default(autoincrement())
-  sendId         String?  @db.VarChar(255)
+  senderId       Int?     @db.Int
   type           String?  @db.VarChar(255)
   typeId         String?  @db.VarChar(255)
   title          String?  @db.VarChar(255)
   message        String?  @db.Text
-  htmlMessage    String?  @db.Text 
+  htmlMessage    String?  @db.Text
   image          String?  @db.Text
-  toId           String?  @db.VarChar(255)
+  toId           Int?     @db.Int
   totalCount     Int?     @default(0)
   status         Boolean  @default(true)
   createdAt      DateTime @default(now()) @db.Timestamp(0)
@@ -111,7 +112,6 @@ model Notification {
   // Optional indexes for faster queries (customize if needed)
   @@index([toId])
   @@index([status])
-
   // Map model name to actual table name
   @@map("lft_notification")
 }
@@ -365,7 +365,7 @@ model News {
   sequence      Int?     @db.Int
   speakerName   String?  @db.VarChar(255)
   speakerDetail String?  @db.VarChar(500)
-  eventDate      String?  @db.VarChar(100)
+  eventDate     String?  @db.VarChar(100)
   time          String?  @db.VarChar(100)
   venue         String?  @db.VarChar(255)
   status        Int      @default(1) @db.Int // 1 = active, 0 = inactive
