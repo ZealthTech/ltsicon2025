@@ -118,7 +118,7 @@ const homepage = async (req, res) => {
         isRegistration,
         isPaymentDone,
         icon: "https://con.bordersandbeyond.in/uploads/icons/Register.png",
-        label: "Registration",
+        label: isRegistration === 1 ? "My Registration" : "Registration",
       };
 
       // abstracts
