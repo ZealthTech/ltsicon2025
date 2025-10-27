@@ -58,7 +58,7 @@ const homepage = async (req, res) => {
       // static section icons (these rarely change, hence global)
       const allSessionsObj = {
         icon: "https://con.bordersandbeyond.in/uploads/icons/session.png",
-        label: "All Sessions",
+        label: "Scientific Programs",
       };
       const albumObj = {
         icon: "https://con.bordersandbeyond.in/uploads/icons/album.png",
@@ -129,7 +129,7 @@ const homepage = async (req, res) => {
         isAbstractSubmission: abstracts.length > 0 ? 1 : 0,
         list: abstracts,
         icon: "https://con.bordersandbeyond.in/uploads/icons/submission.png",
-        label: "Abstract Submission",
+        label: "My Abstracts",
       };
 
       // workshops (flatten bookingDetails)
