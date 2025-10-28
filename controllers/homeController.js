@@ -68,8 +68,12 @@ const homepage = async (req, res) => {
         icon: "https://con.bordersandbeyond.in/uploads/icons/Speaker.png",
         label: "Faculty & Speakers",
       };
+      const generalInfo = {
+        icon: "https://con.bordersandbeyond.in/uploads/icons/general.png",
+        label: "General Information",
+      };
 
-      globalData = { banners, news, allSessionsObj, albumObj, speakersObj };
+      globalData = { banners, news, allSessionsObj, albumObj, speakersObj,generalInfo };
 
       // cache global data
       nodeCache.set(globalCacheKey, globalData, GLOBAL_TTL);
@@ -165,6 +169,7 @@ const homepage = async (req, res) => {
       globalData.allSessionsObj,
       globalData.albumObj,
       globalData.speakersObj,
+      globalData.generalInfo,
     ];
 
     // Final response
