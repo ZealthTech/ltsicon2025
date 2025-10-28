@@ -12,6 +12,7 @@ const news = require("./newsRoute");
 const album = require("./albumRoute");
 const invited = require("./invitedRoute");
 const session = require("./sessionRoute");
+const general = require("./generalInfoRoute");
 const router = express.Router();
 
 router.use("/", test); // Handle / routes
@@ -27,5 +28,6 @@ router.use("/payment", payment); // Handle /user routes
 router.use("/album", album); // Handle /user routes
 router.use("/invited", invited); // Handle /user routes
 router.use("/session", session); // Handle /user routes
+router.use("/general", general); // Handle /user routes
 
 module.exports = router;
