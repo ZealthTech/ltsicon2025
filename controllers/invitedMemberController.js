@@ -71,8 +71,8 @@ const fetchMember = async (req, res) => {
     // 3. Transform response (add full photo URL)
     const memberListWithFullPhotoURL = memberList.map((member) => ({
       ...member,
-      photo: member.photo ? BASE_URL_IMG+"/photo" + member.photo : null,
-      biodata: member.biodata ? BASE_URL_IMG+"/biodata" + member.biodata : null,
+      photo: member.photo ? `${BASE_URL_IMG}photo/${member.photo}` : null,
+      biodata: member.biodata ? `${BASE_URL_IMG}biodata/${member.biodata}` : null,
     }));
 
     return res.status(200).json({
