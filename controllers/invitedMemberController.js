@@ -13,9 +13,9 @@ const fetchMember = async (req, res) => {
       });
     }
 
-    const { userId, search } = req.body; // 🆕 Added search parameter
+    const { userId, search } = req.body; // Added search parameter
 
-    // 1️⃣ Validation
+    // Validation
     if (!userId) {
       return res.status(400).json({
         status: false,
@@ -32,7 +32,7 @@ const fetchMember = async (req, res) => {
 
     const cacheKey = "memberList_" + userId;
 
-    // 2️⃣ Check cache first
+    // Check cache first
     let memberList = nodeCache.get(cacheKey);
 
     if (!memberList) {
@@ -68,14 +68,14 @@ const fetchMember = async (req, res) => {
       nodeCache.set(cacheKey, memberList, 60 * 5); // cache for 5 minutes
     }
 
-    // 3️⃣ Transform response (add full photo URL)
+    // Transform response (add full photo URL)
     let memberListWithFullPhotoURL = memberList.map((member) => ({
       ...member,
       photo: member.photo ? `${BASE_URL_IMG}/photo/${member.photo}` : null,
       biodata: member.biodata ? `${BASE_URL_IMG}/biodata/${member.biodata}` : null,
     }));
 
-    // 4️⃣ Optional: Apply search filter if provided
+    // Optional: Apply search filter if provided
     if (search && search.trim() !== "") {
       const searchLower = search.trim().toLowerCase();
       memberListWithFullPhotoURL = memberListWithFullPhotoURL.filter((member) => {
@@ -91,7 +91,7 @@ const fetchMember = async (req, res) => {
       });
     }
 
-    // 5️⃣ Send filtered response
+    //  Send filtered response
     return res.status(200).json({
       status: true,
       message: search
