@@ -438,6 +438,8 @@ model ResponsibilityWork {
   dateTime     String
   location     String
   title        String
+  theme        String?
+  genre        String?
   createdOn    DateTime @default(now())
 
   // Relation back to InvitedMember
