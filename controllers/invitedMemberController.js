@@ -13,15 +13,16 @@ const fetchMember = async (req, res) => {
       });
     }
 
-    const { userId } = req.body;
+    const { userId, search } = req.body; // 🆕 Added search parameter
 
-    // 1. Validation
+    // 1️⃣ Validation
     if (!userId) {
       return res.status(400).json({
         status: false,
         message: "userId is required",
       });
     }
+
     if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
@@ -31,9 +32,8 @@ const fetchMember = async (req, res) => {
 
     const cacheKey = "memberList_" + userId;
 
-    // 2. Check cache first
+    // 2️⃣ Check cache first
     let memberList = nodeCache.get(cacheKey);
-    //  let memberList = nodeCache.get(cacheKey);
 
     if (!memberList) {
       // If not cached, fetch from DB
@@ -68,16 +68,36 @@ const fetchMember = async (req, res) => {
       nodeCache.set(cacheKey, memberList, 60 * 5); // cache for 5 minutes
     }
 
-    // 3. Transform response (add full photo URL)
-    const memberListWithFullPhotoURL = memberList.map((member) => ({
+    // 3️⃣ Transform response (add full photo URL)
+    let memberListWithFullPhotoURL = memberList.map((member) => ({
       ...member,
-      photo: member.photo ? `${BASE_URL_IMG}photo/${member.photo}` : null,
-      biodata: member.biodata ? `${BASE_URL_IMG}biodata/${member.biodata}` : null,
+      photo: member.photo ? `${BASE_URL_IMG}/photo/${member.photo}` : null,
+      biodata: member.biodata ? `${BASE_URL_IMG}/biodata/${member.biodata}` : null,
     }));
 
+    // 4️⃣ Optional: Apply search filter if provided
+    if (search && search.trim() !== "") {
+      const searchLower = search.trim().toLowerCase();
+      memberListWithFullPhotoURL = memberListWithFullPhotoURL.filter((member) => {
+        return (
+          member.name?.toLowerCase().includes(searchLower) ||
+          member.ltsino?.toLowerCase().includes(searchLower) ||
+          member.state?.toLowerCase().includes(searchLower) ||
+          member.country?.toLowerCase().includes(searchLower) ||
+          member.responsibilityWork?.some((r) =>
+            r.role?.toLowerCase().includes(searchLower)
+          )
+        );
+      });
+    }
+
+    // 5️⃣ Send filtered response
     return res.status(200).json({
       status: true,
-      message: "Invited Member list fetched successfully",
+      message: search
+        ? `Filtered results for "${search}" fetched successfully`
+        : "Invited Member list fetched successfully",
+      count: memberListWithFullPhotoURL.length,
       data: memberListWithFullPhotoURL,
     });
   } catch (err) {
