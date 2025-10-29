@@ -419,6 +419,7 @@ model InvitedMember {
   email     String?
   phone     String?
   photo     String?
+  biodata   String?
   nights    Int?     @default(2)
   status    Int      @default(1)
   createdOn DateTime @default(now())

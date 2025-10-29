@@ -2,8 +2,8 @@ require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const BASE_URL_IMG = process.env.BASE_URL_IMG_OLD;
-const BASE_URL_SPEAKER = process.env.BASE_URL_SPEAKER;
 const nodeCache = require("../middleware/cache.js");
+
 const fetchMember = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -44,6 +44,7 @@ const fetchMember = async (req, res) => {
           name: true,
           ltsino: true,
           photo: true,
+          biodata: true,
           status: true,
           state: true,
           country: true,
@@ -70,7 +71,8 @@ const fetchMember = async (req, res) => {
     // 3. Transform response (add full photo URL)
     const memberListWithFullPhotoURL = memberList.map((member) => ({
       ...member,
-      photo: member.photo ? BASE_URL_SPEAKER + member.photo : null,
+      photo: member.photo ? BASE_URL_IMG+"/photo" + member.photo : null,
+      biodata: member.biodata ? BASE_URL_IMG+"/biodata" + member.biodata : null,
     }));
 
     return res.status(200).json({
