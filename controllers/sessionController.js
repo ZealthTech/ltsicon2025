@@ -207,4 +207,101 @@ const mySession = async (req, res) => {
   }
 };
 
-module.exports = { fetchSession, joinSession, mySession };
+const speciality = async (req, res) => {
+  try {
+    const categories = [
+      "Surgery",
+      "Hepatology",
+      "Anesthesia & Critical Care",
+      "Pediatric Hepatology",
+      "Interventional Radiology",
+      "Miscellaneous",
+      "Pathology",
+    ];
+    // Send response
+    res.status(200).json({
+      status: true,
+      message: "Specialities fetched successfully",
+      data: categories,
+    });
+  } catch (error) {
+    console.error("Speciality fetch error:", error);
+    res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+const rooms = async (req, res) => {
+  try {
+    const roomlist = await prisma.rooms.findMany({});
+    console.log("room",roomlist)
+    res.status(200).json({
+      status: true,
+      message: "Rooms fetched successfully",
+      data: roomlist,
+    });
+  } catch (error) {
+    console.error("Rooms fetch error:", error);
+    res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+const days = async (req, res) => {
+  try {
+    const dayslist = await prisma.days.findMany();
+    res.status(200).json({
+      status: true,
+      message: "Days fetched successfully",
+      data: dayslist,
+    });
+  } catch (error) {
+    console.error("Days fetch error:", error);
+    res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+const sessionList = async (req, res) => {
+  try {
+    console.log("kakakak");
+    const categories = [
+      "Oral Abstracts",
+      "Meet the expert",
+      "Vanguard sessions",
+      "Joint sessions",
+      "Plenary Session",
+      "Workshops",
+      "Debates",
+      "Focussed group discussion",
+      "State of Art  Lecture",
+      "Panel Discussion",
+      "Lecture",
+    ];
+    // Send response
+    res.status(200).json({
+      status: true,
+      message: "Specialities fetched successfully",
+      data: categories,
+    });
+  } catch (error) {
+    console.error("Speciality fetch error:", error);
+    res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = {
+  fetchSession,
+  joinSession,
+  mySession,
+  speciality,
+  sessionList,
+  rooms,
+  days,
+};

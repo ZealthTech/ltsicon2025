@@ -1,5 +1,4 @@
 const express = require("express");
-const FILE = require("../middleware/multer");
 const SESSION = express.Router();
 const session = require("../controllers/sessionController");
 const JWT = require("../middleware/auth");
@@ -18,6 +17,22 @@ SESSION.post(
   "/joined-session",
   JWT.verifyToken([3]),
   session.joinSession,
+);
+SESSION.get(
+  "/get-speciality",
+  session.speciality,
+);
+SESSION.get(
+  "/get-session",
+  session.sessionList,
+);
+SESSION.get(
+  "/get-days",
+  session.days,
+);
+SESSION.get(
+  "/get-rooms",
+  session.rooms,
 );
 
 module.exports = SESSION;

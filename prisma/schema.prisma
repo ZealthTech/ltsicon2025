@@ -130,7 +130,6 @@ model Event {
   sequence     String?         @db.Text
   theme        String?         @db.Text
   sessions     ChooseSession[]
-  EventDetail  EventDetail[]
 
   @@index([eventDate])
   @@map("events")
@@ -144,9 +143,8 @@ model EventDetail {
   genre         String? @db.VarChar(100)
   topic         String? @db.Text
   speaker       String? @db.Text
-  moderator     String? @db.Text
   panelists     String? @db.Text
-  event         Event   @relation(fields: [eventId], references: [eventId], map: "fk_eventDetail_eventId")
+  moderator     String? @db.Text
 
   @@index([eventId])
   @@map("eventDetail")
@@ -445,4 +443,19 @@ model Responsibility {
   responsibility   String?
 
   @@map("responsibility")
+}
+
+model days {
+  day_id   Int       @id @default(autoincrement())
+  day_name String?   @db.VarChar(200)
+  date     DateTime? @db.Date
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model rooms {
+  room_id    Int      @id @default(autoincrement())
+  room_name  String?  @db.VarChar(255)
+  status     Int      @default(0)
+  seq        Int
+  created_on DateTime @default(now()) @db.DateTime(0)
 }
