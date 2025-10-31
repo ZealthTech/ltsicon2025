@@ -22,36 +22,33 @@ model User {
   lastName             String?         @db.VarChar(255)
   email                String          @unique @db.VarChar(100)
   phone                String?         @db.VarChar(15)
-  profileImage         String?         @db.VarChar(1000)
   password             String?         @db.VarChar(255)
-  otp                  Int?            @db.Int
-  otpExpiry            DateTime?       @db.DateTime(0)
+  otp                  Int?
   isLTSI               String?         @db.VarChar(50)
   LTSINumber           String?         @db.VarChar(100)
   medicalCouncilNumber String?         @db.VarChar(100)
   specialityDepartment String?         @db.VarChar(255)
   gender               String?         @db.VarChar(50)
   country              String?         @db.VarChar(100)
-  city                 String?         @db.VarChar(100)
-  address              String?         @db.VarChar(100)
-  status               Int             @db.Int
+  status               Int
+  createdOn            DateTime        @default(now()) @db.Timestamp(0)
+  otpExpiry            DateTime?       @db.DateTime(0)
+  roleId               Int?
+  lastLogin            DateTime?
   token                String?         @db.VarChar(1000)
+  profileImage         String?         @db.VarChar(1000)
+  address              String?         @db.VarChar(100)
+  city                 String?         @db.VarChar(100)
+  andLogin             Int?            @default(0)
   fcmAndToken          String?         @db.VarChar(1000)
   fcmIosToken          String?         @db.VarChar(1000)
-  andLogin             Int?            @default(0) @db.Int
-  iosLogin             Int?            @default(0) @db.Int
-  lastLogin            DateTime?
-  createdOn            DateTime        @default(now()) @db.Timestamp(0)
-  // Role FK (already present)
-  roleId               Int?            @db.Int
-  role                 Role?           @relation(fields: [roleId], references: [id], map: "fk_users_roleId")
-  // Reverse relations: one user can have many of these
-  employments          Employment[]
+  iosLogin             Int?            @default(0)
   absSubmissions       AbsSubmission[]
   bookingDetails       BookingDetail[]
   bookings             Booking[]
+  employments          Employment[]
+  role                 Role?           @relation(fields: [roleId], references: [id], map: "fk_users_roleId")
 
-  // Practical indexes (safe with existing data)
   @@index([status])
   @@index([roleId])
   @@index([lastName, firstName])
@@ -61,11 +58,11 @@ model User {
 model WorkShop {
   workShopId Int      @id @default(autoincrement())
   workShop   String   @db.VarChar(255)
-  link       String?  @db.VarChar(500)
-  fee        Int      @db.Int
-  sequence   Int      @db.Int
-  status     Int      @db.Int
+  fee        Int
+  sequence   Int
+  status     Int
   createdOn  DateTime @default(now()) @db.Timestamp(0)
+  link       String?  @db.VarChar(500)
 
   @@index([status])
   @@index([sequence])
@@ -75,8 +72,8 @@ model WorkShop {
 model Title {
   title_id Int    @id @default(autoincrement())
   name     String @db.VarChar(255)
-  sequence Int    @db.Int
-  status   Int    @db.Int
+  sequence Int
+  status   Int
 
   @@index([status])
   @@index([sequence])
@@ -86,8 +83,8 @@ model Title {
 model SpecialityDepartment {
   departmentId             Int      @id @default(autoincrement())
   specialityDepartmentName String   @db.VarChar(255)
-  sequence                 Int      @db.Int
-  status                   Int      @db.Int
+  sequence                 Int
+  status                   Int
   createdOn                DateTime @default(now()) @db.Timestamp(0)
 
   @@index([status])
@@ -97,55 +94,72 @@ model SpecialityDepartment {
 
 model Notification {
   notificationId Int      @id @default(autoincrement())
-  senderId       Int?     @db.Int
   type           String?  @db.VarChar(255)
   typeId         String?  @db.VarChar(255)
   title          String?  @db.VarChar(255)
   message        String?  @db.Text
   htmlMessage    String?  @db.Text
   image          String?  @db.Text
-  toId           Int?     @db.Int
+  toId           Int?
   totalCount     Int?     @default(0)
   status         Boolean  @default(true)
   createdAt      DateTime @default(now()) @db.Timestamp(0)
+  senderId       Int?
 
-  // Optional indexes for faster queries (customize if needed)
   @@index([toId])
   @@index([status])
-  // Map model name to actual table name
   @@map("lft_notification")
 }
 
 model Event {
-  eventId     Int      @id @default(autoincrement())
-  dayNo       Int      @db.Int
-  eventDate   DateTime @db.Date
-  filter      String   @db.VarChar(50)
-  title       String   @db.VarChar(500)
-  descip      String   @db.VarChar(500) // kept to match DB column name
-  dateRange   String   @db.VarChar(500)
-  venue       String   @db.VarChar(500)
-  noOfPeople  Int      @db.Int
-  speakerName String   @db.VarChar(100)
-  overview    String   @db.VarChar(1000)
-  longdesc    String   @db.VarChar(1000)
-  banner      String   @db.VarChar(500)
-
-  sessions ChooseSession[] // One event can have many chooseSessions
+  dayNo        String          @db.VarChar(100)
+  eventDate    DateTime
+  filter       String          @db.Text
+  title        String          @db.VarChar(500)
+  dateRange    String          @db.VarChar(500)
+  venue        String          @db.VarChar(500)
+  noOfPeople   Int
+  eventId      Int             @id @default(autoincrement())
+  speakerName  String          @db.Text
+  overview     String?         @db.Text
+  longdesc     String?         @db.Text
+  banner       String?         @db.VarChar(500)
+  chairpersons String?         @db.Text
+  filter2      String?         @db.Text
+  panelists    String?         @db.Text
+  sequence     String?         @db.Text
+  theme        String?         @db.Text
+  sessions     ChooseSession[]
+  EventDetail  EventDetail[]
 
   @@index([eventDate])
-  @@index([filter])
   @@map("events")
+}
+
+model EventDetail {
+  eventDetailId Int     @id @default(autoincrement())
+  eventId       Int
+  startTime     String  @db.VarChar(100)
+  endTime       String  @db.VarChar(100)
+  genre         String? @db.VarChar(100)
+  topic         String? @db.Text
+  speaker       String? @db.Text
+  moderator     String? @db.Text
+  panelists     String? @db.Text
+  event         Event   @relation(fields: [eventId], references: [eventId], map: "fk_eventDetail_eventId")
+
+  @@index([eventId])
+  @@map("eventDetail")
 }
 
 model ChooseSession {
   id        Int      @id @default(autoincrement())
   userId    Int
   eventId   Int
-  createdOn DateTime @default(now())
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [eventId])
 
-  event Event @relation(fields: [eventId], references: [eventId])
-
+  @@index([eventId], map: "chooseSession_eventId_fkey")
   @@map("chooseSession")
 }
 
@@ -156,8 +170,7 @@ model Employment {
   hospitalName    String   @db.VarChar(255)
   hospitalAddress String   @db.Text
   createdOn       DateTime @default(now()) @db.Timestamp(0)
-
-  user User @relation(fields: [userId], references: [userId], map: "fk_employment_user")
+  user            User     @relation(fields: [userId], references: [userId], map: "fk_employment_user")
 
   @@index([userId])
   @@index([createdOn])
@@ -167,41 +180,37 @@ model Employment {
 model ConferenceFees {
   conferenceId Int      @id @default(autoincrement())
   memberType   String   @db.VarChar(255)
-  fee          Int      @db.Int
-  sequence     Int      @db.Int
-  status       Int      @db.Int // 1 = active, 0 = inactive
+  fee          Int
+  sequence     Int
+  status       Int
   createdOn    DateTime @default(now()) @db.Timestamp(0)
 
   @@index([status])
   @@index([sequence])
   @@index([memberType])
-  @@map("conferenceFees") // map to existing table name
+  @@map("conferenceFees")
 }
 
 model Booking {
-  bookingId              Int       @id @default(autoincrement())
-  bookingNumber          String    @db.VarChar(255)
+  bookingId              Int             @id @default(autoincrement())
+  bookingNumber          String          @db.VarChar(255)
   userId                 Int
-  memberType             String?   @db.VarChar(255)
-  memberTypeFee          String?   @default("0") @db.VarChar(11)
-  accompanyingPersonName String?   @db.VarChar(255)
-  accompanyingPersonfee  String?   @default("0") @db.VarChar(50)
-  accommodation          String?   @db.VarChar(255)
-  accommodationFee       String?   @default("0") @db.VarChar(11)
-  checkin                String?   @db.VarChar(100)
-  checkout               String?   @db.VarChar(100)
-  nights                 String    @default("0") @db.VarChar(11)
-  totalPayment           Int?      @default(0) @db.Int
-  screenShot             String?   @db.Text
-  status                 Int       @default(0) @db.Int // 0: pending, 1: active, 2: rejected
-  createdOn              DateTime  @default(now()) @db.Timestamp(0)
-  updatedOn              DateTime? @db.Timestamp(0)
-
-  // Relation to User (already present)
-  user User @relation(fields: [userId], references: [userId], map: "fk_bookings_user")
-
-  // Reverse relation
-  bookingDetails BookingDetail[]
+  memberType             String?         @db.VarChar(255)
+  memberTypeFee          String?         @default("0") @db.VarChar(11)
+  accompanyingPersonName String?         @db.VarChar(255)
+  accompanyingPersonfee  String?         @default("0") @db.VarChar(50)
+  accommodation          String?         @db.VarChar(255)
+  accommodationFee       String?         @default("0") @db.VarChar(11)
+  checkin                String?         @db.VarChar(100)
+  checkout               String?         @db.VarChar(100)
+  nights                 String          @default("0") @db.VarChar(11)
+  totalPayment           Int?            @default(0)
+  status                 Int             @default(0)
+  createdOn              DateTime        @default(now()) @db.Timestamp(0)
+  updatedOn              DateTime?       @db.Timestamp(0)
+  screenShot             String?         @db.Text
+  bookingDetails         BookingDetail[]
+  user                   User            @relation(fields: [userId], references: [userId], map: "fk_bookings_user")
 
   @@index([userId])
   @@index([status])
@@ -213,11 +222,9 @@ model BookingDetail {
   bookingId       Int
   userId          Int
   workshop        String? @db.VarChar(255)
-  workshopFee     Int?    @db.Int
-
-  // Relations
-  booking Booking @relation(fields: [bookingId], references: [bookingId], map: "fk_bookingDetail_booking")
-  user    User    @relation(fields: [userId], references: [userId], map: "fk_bookingDetail_user")
+  workshopFee     Int?
+  booking         Booking @relation(fields: [bookingId], references: [bookingId], map: "fk_bookingDetail_booking")
+  user            User    @relation(fields: [userId], references: [userId], map: "fk_bookingDetail_user")
 
   @@index([bookingId])
   @@index([userId])
@@ -227,10 +234,10 @@ model BookingDetail {
 model AccommodationCharges {
   accommodationId   Int      @id @default(autoincrement())
   accommodationType String   @db.VarChar(255)
-  charge            String   @db.VarChar(255) // per night (stored as text in DB)
-  price             String?  @db.VarChar(255) // stored as text in DB
-  sequence          Int      @db.Int
-  status            Int      @db.Int // 1 = active, 0 = inactive
+  charge            String   @db.VarChar(255)
+  price             String?  @db.VarChar(255)
+  sequence          Int
+  status            Int
   createdOn         DateTime @default(now()) @db.Timestamp(0)
 
   @@index([status])
@@ -242,8 +249,8 @@ model AccommodationCharges {
 model AbsTheme {
   themeId   Int    @id @default(autoincrement())
   themeName String @db.VarChar(255)
-  status    Int    @default(1) @db.Int // 1 = Active, 0 = Inactive
-  sequence  Int    @default(0) @db.Int
+  status    Int    @default(1)
+  sequence  Int    @default(0)
 
   @@index([status])
   @@index([sequence])
@@ -251,29 +258,25 @@ model AbsTheme {
 }
 
 model AbsSubmission {
-  submissionId         Int      @id @default(autoincrement())
+  submissionId         Int         @id @default(autoincrement())
   userId               Int?
-  abstractSubmissionId String?  @db.VarChar(255)
-  categoryId           String   @db.VarChar(200)
-  subCategoryId        String?  @db.VarChar(255)
-  themeName            String?  @db.VarChar(255)
-  abstractTitle        String   @db.VarChar(255)
-  abstractDetail       String?  @db.LongText
-  keywords             String?  @db.Text
-  video                String?  @db.VarChar(255)
-  filedoc              String?  @db.VarChar(255)
-  abstractFile         String?  @db.VarChar(255)
-  IsConflictofInterest Int?     @default(0) @db.Int // 1 = yes, 0 = no
-  message              String?  @db.Text
-  submissionStatus     String?  @db.VarChar(5)
-  status               Int?     @default(0) @db.Int // 0 = Draft, 1 = Submitted, 2 = Rejected, 3 = Accepted
-  createdOn            DateTime @default(now()) @db.DateTime(0)
-
-  // Relation to User (already present)
-  user User? @relation(fields: [userId], references: [userId], map: "fk_abs_submission_user")
-
-  // Reverse relation
-  authors AbsAuthor[]
+  abstractSubmissionId String?     @db.VarChar(255)
+  categoryId           String      @db.VarChar(200)
+  subCategoryId        String?     @db.VarChar(255)
+  themeName            String?     @db.VarChar(255)
+  abstractTitle        String      @db.VarChar(255)
+  abstractDetail       String?     @db.LongText
+  keywords             String?     @db.Text
+  video                String?     @db.VarChar(255)
+  filedoc              String?     @db.VarChar(255)
+  IsConflictofInterest Int?        @default(0)
+  message              String?     @db.Text
+  status               Int?        @default(0)
+  createdOn            DateTime    @default(now()) @db.DateTime(0)
+  submissionStatus     String?     @db.VarChar(5)
+  abstractFile         String?     @db.VarChar(255)
+  authors              AbsAuthor[]
+  user                 User?       @relation(fields: [userId], references: [userId], map: "fk_abs_submission_user")
 
   @@index([userId])
   @@index([status])
@@ -282,14 +285,12 @@ model AbsSubmission {
 }
 
 model AbsSubCategory {
-  subId       Int    @id @default(autoincrement())
+  subId       Int         @id @default(autoincrement())
   catId       Int
-  subCategory String @db.VarChar(255)
-  status      Int    @default(1) @db.Int
-  sequence    Int    @default(0) @db.Int
-
-  // Relation: each subcategory belongs to a category
-  category AbsCategory @relation(fields: [catId], references: [id], map: "fk_abs_subcategory_category")
+  subCategory String      @db.VarChar(255)
+  status      Int         @default(1)
+  sequence    Int         @default(0)
+  category    AbsCategory @relation(fields: [catId], references: [id], map: "fk_abs_subcategory_category")
 
   @@index([catId])
   @@index([status])
@@ -298,13 +299,11 @@ model AbsSubCategory {
 }
 
 model AbsCategory {
-  id        Int      @id @default(autoincrement())
-  category  String   @db.VarChar(255) // category name
-  status    Int      @default(1) @db.Int // 1 = active, 0 = inactive
-  sequence  Int      @default(0) @db.Int
-  createdOn DateTime @default(now()) @db.DateTime(0)
-
-  // Relation: one category can have many subcategories
+  id            Int              @id @default(autoincrement())
+  category      String           @db.VarChar(255)
+  status        Int              @default(1)
+  sequence      Int              @default(0)
+  createdOn     DateTime         @default(now()) @db.DateTime(0)
   subcategories AbsSubCategory[]
 
   @@index([status])
@@ -313,23 +312,21 @@ model AbsCategory {
 }
 
 model AbsAuthor {
-  authorId            Int      @id @default(autoincrement())
+  authorId            Int            @id @default(autoincrement())
   submissionId        Int?
-  title               String   @db.VarChar(255)
-  firstName           String   @db.VarChar(200)
-  lastName            String?  @db.VarChar(200)
-  designation         String?  @db.VarChar(255)
-  institution         String?  @db.VarChar(255)
-  country             String?  @db.VarChar(200)
-  phone               String?  @db.VarChar(15)
-  email               String?  @db.VarChar(100)
-  isPresentingAuthor  String?  @db.VarChar(10) // usually "yes"/"no"
-  correspondingAuthor String?  @db.VarChar(10) // usually "yes"/"no"
-  status              Int      @default(1) @db.Int // 1 = active, 0 = inactive
-  createdOn           DateTime @default(now()) @db.DateTime(0)
-
-  // Relation: each author belongs to one submission
-  submission AbsSubmission? @relation(fields: [submissionId], references: [submissionId], map: "fk_abs_author_submission")
+  title               String         @db.VarChar(255)
+  firstName           String         @db.VarChar(200)
+  lastName            String?        @db.VarChar(200)
+  designation         String?        @db.VarChar(255)
+  institution         String?        @db.VarChar(255)
+  country             String?        @db.VarChar(200)
+  phone               String?        @db.VarChar(15)
+  email               String?        @db.VarChar(100)
+  isPresentingAuthor  String?        @db.VarChar(10)
+  correspondingAuthor String?        @db.VarChar(10)
+  status              Int            @default(1)
+  createdOn           DateTime       @default(now()) @db.DateTime(0)
+  submission          AbsSubmission? @relation(fields: [submissionId], references: [submissionId], map: "fk_abs_author_submission")
 
   @@index([submissionId])
   @@index([status])
@@ -337,53 +334,53 @@ model AbsAuthor {
 }
 
 model Country {
-  id       Int    @id @default(autoincrement()) @db.Int
+  id       Int    @id @default(autoincrement())
   name     String @db.VarChar(100)
   code     String @db.VarChar(5)
-  sequence Int?   @db.Int
-  status   Int    @default(1) @db.Int // 1 = active, 0 = inactive
+  sequence Int?
+  status   Int    @default(1)
 
   @@map("countries")
 }
 
 model Banner {
-  id          Int      @id @default(autoincrement()) @db.Int
+  id          Int      @id @default(autoincrement())
   name        String   @db.VarChar(100)
   bannerImage String   @db.VarChar(255)
-  sequence    Int?     @db.Int
-  status      Int      @default(1) @db.Int // 1 = active, 0 = inactive
+  sequence    Int?
+  status      Int      @default(1)
   createdOn   DateTime @default(now()) @db.DateTime(0)
 
   @@map("banners")
 }
 
 model News {
-  id            Int      @id @default(autoincrement()) @db.Int
+  id            Int      @id @default(autoincrement())
   title         String   @db.VarChar(100)
   description   String   @db.VarChar(10000)
+  sequence      Int?
+  status        Int      @default(1)
   newsImage     String   @db.VarChar(255)
-  sequence      Int?     @db.Int
-  speakerName   String?  @db.VarChar(255)
-  speakerDetail String?  @db.VarChar(500)
-  eventDate     String?  @db.VarChar(100)
-  time          String?  @db.VarChar(100)
-  venue         String?  @db.VarChar(255)
-  status        Int      @default(1) @db.Int // 1 = active, 0 = inactive
   createdOn     DateTime @default(now()) @db.DateTime(0)
+  eventDate     String?  @db.VarChar(100)
+  speakerDetail String?  @db.VarChar(500)
+  speakerName   String?  @db.VarChar(255)
+  venue         String?  @db.VarChar(255)
+  time          String?  @db.VarChar(100)
 
   @@map("news")
 }
 
 model PaymentDetails {
-  id                Int      @id @default(autoincrement()) @db.Int
+  id                Int      @id @default(autoincrement())
   bankName          String   @db.VarChar(100)
   accountNumber     String   @db.VarChar(100)
   ifscCode          String   @db.VarChar(50)
   accountHolderName String   @db.VarChar(100)
   branch            String   @db.VarChar(100)
-  qrcodeImage       String   @db.VarChar(255)
-  status            Int      @default(1) @db.Int // 1 = active,
+  status            Int      @default(1)
   createdOn         DateTime @default(now()) @db.DateTime(0)
+  qrcodeImage       String   @db.VarChar(255)
 
   @@map("payment_details")
 }
@@ -398,34 +395,32 @@ model PhotoAlbum {
   status     Int          @default(1)
   ownerName  String?
   createdOn  DateTime     @default(now())
-  albumImage AlbumImage[] // relation
+  albumImage AlbumImage[]
 }
 
 model AlbumImage {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   albumId   Int
   path      String
-  createdOn DateTime @default(now())
+  createdOn DateTime   @default(now())
+  album     PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
 
-  album PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  @@index([albumId], map: "AlbumImage_albumId_fkey")
 }
 
 model InvitedMember {
   id        Int      @id @default(autoincrement())
   name      String
-  state     String?
-  country   String?
   ltsino    String?
   email     String?
+  nights    Int?     @default(2)
+  createdOn DateTime @default(now())
+  country   String?
   phone     String?
   photo     String?
-  biodata   String?
-  nights    Int?     @default(2)
+  state     String?
   status    Int      @default(1)
-  createdOn DateTime @default(now())
-
-  // Relation: one invited member can have many responsibilities
-  responsibilityWork ResponsibilityWork[]
+  biodata   String?
 
   @@map("invited_member")
 }
@@ -433,24 +428,21 @@ model InvitedMember {
 model ResponsibilityWork {
   id           Int      @id @default(autoincrement())
   invitedMemId Int
-  topic        String
+  topic        String?  @db.Text
   role         String
   dateTime     String
   location     String
-  title        String
-  theme        String?
-  genre        String?
+  title        String   @db.Text
   createdOn    DateTime @default(now())
-
-  // Relation back to InvitedMember
-  invitedMember InvitedMember @relation(fields: [invitedMemId], references: [id], onDelete: Cascade)
+  genre        String?
+  theme        String?
 
   @@map("responsibilityWork")
 }
 
 model Responsibility {
   responsibilityId Int     @id @default(autoincrement())
-  responsibility   String? // nullable because your MySQL column allows DEFAULT NULL
+  responsibility   String?
 
-  @@map("responsibility") // keeps the original table name
+  @@map("responsibility")
 }

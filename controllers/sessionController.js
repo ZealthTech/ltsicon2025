@@ -1,9 +1,6 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const BASE_URL_IMG = process.env.BASE_URL_IMG;
-const fs = require("fs");
-const path = require("path");
 
 const fetchSession = async (req, res) => {
   console.log("first");
@@ -34,45 +31,24 @@ const fetchSession = async (req, res) => {
     }
 
     // Fetch all events with their sessions
-    const events = await prisma.event.findMany({});
+    const events = await prisma.event.findMany({
+      include: {
+        EventDetail: true,
+      },
+    });
+    console.log("eventDetails", events);
 
-    console.log("events", events);
+    const formatted = events.map(({ EventDetail, ...rest }) => ({
+      ...rest,
+      eventDetail: EventDetail,
+    }));
 
-    // Group events by eventDate
-    const grouped = {};
-
-    await Promise.all(
-      events.map(async (event) => {
-        let isJoined = 0;
-
-        const isSessionExist = await prisma.chooseSession.findFirst({
-          where: {
-            userId: Number(userId),
-            eventId: Number(event.eventId),
-          },
-        });
-
-        if (isSessionExist) {
-          isJoined = 1;
-        }
-
-        const dayNo = event.dayNo;
-
-        if (!grouped[dayNo]) {
-          grouped[dayNo] = [];
-        }
-
-        grouped[dayNo].push({
-          ...event,
-          isJoined,
-        });
-      })
-    );
+    console.log(formatted);
 
     res.status(200).json({
       status: true,
       message: "Sessions fetched successfully!",
-      data: grouped,
+      data: formatted,
     });
   } catch (error) {
     console.error("Session fetch error:", error);
@@ -159,7 +135,7 @@ const joinSession = async (req, res) => {
     res.status(200).json({
       status: true,
       message: "Session joined successfully!",
-      data: joinedSession,
+      data: updatedJoinedSession,
     });
   } catch (error) {
     console.error("Session join error:", error);
@@ -212,13 +188,6 @@ const mySession = async (req, res) => {
       return res.status(404).json({
         status: false,
         message: "No sessions found for this user.",
-      });
-    }
-
-    if (!userSessions) {
-      return res.status(404).json({
-        status: false,
-        message: "No session found for this user.",
       });
     }
 

@@ -19,9 +19,6 @@ const BASE_URL_LTSIMEMBER = process.env.BASE_URL_LTSIMEMBER;
 const BASE_URL_IMG_LTSIMEMBER = process.env.BASE_URL_IMG_LTSIMEMBER;
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
-
-
-
 function generateOtp() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
@@ -39,22 +36,20 @@ const transporter = nodemailer.createTransport({
 });
 // Express route handler
 
-// update FCM 
-const updateFCM = async(req,res) => {
-  
-try {
-
-   if (req.method !== "POST") {
+// update FCM
+const updateFCM = async (req, res) => {
+  try {
+    if (req.method !== "POST") {
       return res.status(405).json({
         status: false,
         message: "Method Not Allowed",
       });
     }
     const { userId, FCM, deviceId } = req.body;
-console.log("req.body",req.body)
-console.log("req.body",req.user)
+    console.log("req.body", req.body);
+    console.log("req.body", req.user);
     // Basic validation
-    if (!userId || !FCM || (deviceId === undefined || deviceId === null)) {
+    if (!userId || !FCM || deviceId === undefined || deviceId === null) {
       return res.status(400).json({
         status: false,
         message: "All fields (userId, FCM, deviceId) are required",
@@ -69,7 +64,7 @@ console.log("req.body",req.user)
         message: "deviceId must be 1 (Android) or 2 (iOS)",
       });
     }
-console.log(req.user,"user",req.user.userId);
+    console.log(req.user, "user", req.user.userId);
     // Owner check: token user vs requested userId
     if (Number(userId) !== Number(req.user && req.user.userId)) {
       return res.status(403).json({
@@ -79,7 +74,7 @@ console.log(req.user,"user",req.user.userId);
     }
 
     // Basic sanitization / sanity checks for FCM token length
-    if (typeof FCM !== "string" || FCM.length === 0  ) {
+    if (typeof FCM !== "string" || FCM.length === 0) {
       return res.status(400).json({
         status: false,
         message: "Invalid FCM token",
@@ -137,8 +132,6 @@ console.log(req.user,"user",req.user.userId);
       message: "FCM token updated successfully",
       data: updated,
     });
-
-
   } catch (err) {
     console.error("signupSendOtp error:", err.message || err);
     return res.status(500).json({
@@ -146,7 +139,6 @@ console.log(req.user,"user",req.user.userId);
       message: "Internal Server Error",
     });
   }
-  
 };
 // Send OTP API
 const signupSendOtp = async (req, res) => {
@@ -289,7 +281,9 @@ const signupSendOtp = async (req, res) => {
       from: `"LTSICON2025" <${FROM_MAIL}>`,
       to: email,
       bcc: MAIL_BCC,
-      subject: `Your LTSICON2025 One-Time Password ${email === "raj.techknowten@gmail.com" ? 1234 : otp} for Login!`,
+      subject: `Your LTSICON2025 One-Time Password ${
+        email === "raj.techknowten@gmail.com" ? 1234 : otp
+      } for Login!`,
       html,
       // text: `Your OTP for password reset is: ${otp}.`,
     };
@@ -504,7 +498,8 @@ const signupForm = async (req, res) => {
 
     <!-- Main Content -->
     <div style="margin-top: 20px; text-align: center;">
-      <h2 style="color: #222; margin-bottom: 10px;">Welcome, ${updatedUser.title
+      <h2 style="color: #222; margin-bottom: 10px;">Welcome, ${
+        updatedUser.title
       } ${updatedUser.firstName || ""} ${updatedUser.lastName}!</h2>
       <p style="font-size: 15px; color: #555;">
         Congratulations 🎉 Your <b>LTSICON2025</b> account has been successfully created and verified.  
@@ -595,7 +590,7 @@ const loginwithEmailSendOtp = async (req, res) => {
         message: "Email and roleId are required",
       });
     }
-    console.log("emial", email)
+    console.log("emial", email);
     // 1. Find user by email and roleId
     const existingUser = await prisma.user.findFirst({
       where: {
@@ -619,7 +614,10 @@ const loginwithEmailSendOtp = async (req, res) => {
     // 3. Save OTP to user table
     const updatedUser = await prisma.user.update({
       where: { userId: existingUser.userId },
-      data: { otp: email === "raj.techknowten@gmail.com" ? 1234 : Number(otp), otpExpiry },
+      data: {
+        otp: email === "raj.techknowten@gmail.com" ? 1234 : Number(otp),
+        otpExpiry,
+      },
       include: { role: true },
     });
 
@@ -683,7 +681,9 @@ const loginwithEmailSendOtp = async (req, res) => {
       from: `"LTSICON2025" <${FROM_MAIL}>`,
       to: existingUser.email,
       bcc: MAIL_BCC,
-      subject: `Your One Time Password LTSICON2025 Login : ${email === "raj.techknowten@gmail.com" ? 1234 : otp}`,
+      subject: `Your One Time Password LTSICON2025 Login : ${
+        email === "raj.techknowten@gmail.com" ? 1234 : otp
+      }`,
       html,
     });
 
@@ -842,7 +842,13 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
 
       await prisma.user.update({
         where: { userId: existingUser.userId },
-        data: { otp: existingUser.email === "raj.techknowten@gmail.com" ? 1234 : Number(otp), otpExpiry },
+        data: {
+          otp:
+            existingUser.email === "raj.techknowten@gmail.com"
+              ? 1234
+              : Number(otp),
+          otpExpiry,
+        },
       });
 
       const html = `
@@ -881,7 +887,9 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
             font-weight: bold;
             letter-spacing: 4px;
             color: #333;
-          ">${existingUser.email === "raj.techknowten@gmail.com" ? 1234 : otp}</div>
+          ">${
+            existingUser.email === "raj.techknowten@gmail.com" ? 1234 : otp
+          }</div>
           <p style="font-size: 14px; color: #777; margin-top: 20px;">
             Didn’t request this code? Ignore this email.
           </p>
@@ -904,7 +912,9 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
         from: `"LTSICON2025" <${FROM_MAIL}>`,
         to: existingUser.email,
         bcc: MAIL_BCC,
-        subject: `Your One Time Password LTSICON2025 Login : ${existingUser.email === "raj.techknowten@gmail.com" ? 1234 : otp}`,
+        subject: `Your One Time Password LTSICON2025 Login : ${
+          existingUser.email === "raj.techknowten@gmail.com" ? 1234 : otp
+        }`,
         html,
       });
 
@@ -1220,49 +1230,55 @@ const deleteUser = async (req, res) => {
         message: "Method Not Allowed",
       });
     }
-    console.log("login")
+    console.log("login");
 
     const { userId, roleId } = req.body;
     if (!userId || !roleId) {
       return res.status(400).json({
         status: false,
-        message: "userId and roleId are required"
-      })
+        message: "userId and roleId are required",
+      });
     }
     // Check if user exists
     const user = await prisma.user.findUnique({
       where: {
         userId: Number(userId),
-        roleId: Number(roleId)
-      }
-    })
+        roleId: Number(roleId),
+      },
+    });
     if (!user) {
       return res.status(401).json({
         status: false,
-        message: "User not found"
-      })
+        message: "User not found",
+      });
     }
-    await prisma.chooseSession.deleteMany({ where: { userId: Number(userId) } });
+    await prisma.chooseSession.deleteMany({
+      where: { userId: Number(userId) },
+    });
     await prisma.employment.deleteMany({ where: { userId: Number(userId) } });
-    await prisma.bookingDetail.deleteMany({ where: { userId: Number(userId) } });
+    await prisma.bookingDetail.deleteMany({
+      where: { userId: Number(userId) },
+    });
     await prisma.booking.deleteMany({ where: { userId: Number(userId) } });
-    await prisma.absSubmission.deleteMany({ where: { userId: Number(userId) } });
+    await prisma.absSubmission.deleteMany({
+      where: { userId: Number(userId) },
+    });
     await prisma.photoAlbum.deleteMany({ where: { userId: Number(userId) } });
     const deletedUser = await prisma.user.delete({
       where: { userId: Number(userId) },
     });
-    console.log(deletedUser)
+    console.log(deletedUser);
     return res.status(200).json({
       status: true,
-      message: "User deleted successfully"
-    })
+      message: "User deleted successfully",
+    });
   } catch (err) {
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",
     });
   }
-}
+};
 module.exports = {
   signupForm,
   signupSendOtp,
@@ -1272,5 +1288,5 @@ module.exports = {
   loginwithLtsiNumberSendOtp,
   loginwithLtsiNumberOtpVerify,
   deleteUser,
-  updateFCM
+  updateFCM,
 };
