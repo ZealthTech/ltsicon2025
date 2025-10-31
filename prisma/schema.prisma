@@ -130,6 +130,7 @@ model Event {
   sequence     String?         @db.Text
   theme        String?         @db.Text
   sessions     ChooseSession[]
+  eventDetail     EventDetail[]
 
   @@index([eventDate])
   @@map("events")
@@ -145,8 +146,9 @@ model EventDetail {
   speaker       String? @db.Text
   panelists     String? @db.Text
   moderator     String? @db.Text
+  event         Event   @relation(fields: [eventId], references: [eventId], map: "eventDetail_eventId_fkey")
 
-  @@index([eventId])
+  @@index([eventId],map:"eventDetail_eventId_fkey")
   @@map("eventDetail")
 }
 

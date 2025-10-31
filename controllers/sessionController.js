@@ -33,7 +33,7 @@ const fetchSession = async (req, res) => {
     // Fetch all events with their sessions
     const events = await prisma.event.findMany({
       include: {
-        EventDetail: true,
+        eventDetail: true,
       },
     });
     console.log("eventDetails", events);
@@ -235,7 +235,7 @@ const speciality = async (req, res) => {
 const rooms = async (req, res) => {
   try {
     const roomlist = await prisma.rooms.findMany({});
-    console.log("room",roomlist)
+    console.log("room", roomlist);
     res.status(200).json({
       status: true,
       message: "Rooms fetched successfully",
