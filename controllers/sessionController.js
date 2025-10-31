@@ -35,15 +35,21 @@ const fetchSession = async (req, res) => {
     const events = await prisma.event.findMany({
       include: {
         eventDetail: true,
+        sessions: {
+          where: { userId: Number(userId) }, // Filter sessions for this specific user
+        },
       },
     });
     console.log("eventDetails", events);
 
-    const formatted = events.map(({ EventDetail, eventDate, ...rest }) => ({
-      ...rest,
-      eventDetail: EventDetail,
-      eventDate: moment(eventDate).format("Do MMM, YYYY"),
-    }));
+    const formatted = events.map(
+      ({ eventDetail, sessions, eventDate, ...rest }) => ({
+        ...rest,
+        eventDetail: eventDetail,
+        isJoined: sessions.length > 0 ? 1 : 0,
+        eventDate: moment(eventDate).format("Do MMM, YYYY"),
+      })
+    );
 
     console.log(formatted);
 
