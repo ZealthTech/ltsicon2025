@@ -13,9 +13,8 @@ const fetchMember = async (req, res) => {
       });
     }
 
-    const { userId, search } = req.body; // Added search parameter
+    const { userId, search } = req.body;
 
-    // Validation
     if (!userId) {
       return res.status(400).json({
         status: false,
@@ -32,12 +31,12 @@ const fetchMember = async (req, res) => {
 
     const cacheKey = "memberList_" + userId;
 
-    // Check cache first
+    // Check cache
     let memberList = nodeCache.get(cacheKey);
 
     if (!memberList) {
-      // If not cached, fetch from DB
-      memberList = await prisma.invitedMember.findMany({
+      // 1️⃣ Fetch all members
+      const members = await prisma.invitedMember.findMany({
         where: { status: 1 },
         select: {
           id: true,
@@ -48,38 +47,50 @@ const fetchMember = async (req, res) => {
           status: true,
           state: true,
           country: true,
-          responsibilityWork: {
-            select: {
-              invitedMemId: true,
-              role: true,
-            },
-          },
         },
       });
 
-      if (!memberList || memberList.length === 0) {
+      if (!members || members.length === 0) {
         return res.status(404).json({
           status: false,
-          message: "No memberList found for this user",
+          message: "No invited members found",
         });
       }
 
-      // Save to cache
-      nodeCache.set(cacheKey, memberList, 60 * 5); // cache for 5 minutes
+      // 2️⃣ Fetch all responsibility works separately
+      const works = await prisma.responsibilityWork.findMany({
+        select: {
+          invitedMemId: true,
+          role: true,
+        },
+      });
+
+      // 3️⃣ Manually combine the data
+      memberList = members.map((member) => ({
+        ...member,
+        responsibilityWork: works.filter(
+          (w) => w.invitedMemId === member.id
+        ), // attach matching work items
+      }));
+
+      // 4️⃣ Cache the combined result
+      nodeCache.set(cacheKey, memberList, 60 * 5);
     }
 
-    // Transform response (add full photo URL)
+    // 5️⃣ Add full photo + biodata URLs
     let memberListWithFullPhotoURL = memberList.map((member) => ({
       ...member,
       photo: member.photo ? `${BASE_URL_IMG}/photo/${member.photo}` : null,
-      biodata: member.biodata ? `${BASE_URL_IMG}/biodata/${member.biodata}` : null,
+      biodata: member.biodata
+        ? `${BASE_URL_IMG}/biodata/${member.biodata}`
+        : null,
     }));
 
-    // Optional: Apply search filter if provided
+    // 6️⃣ Optional search filter
     if (search && search.trim() !== "") {
       const searchLower = search.trim().toLowerCase();
-      memberListWithFullPhotoURL = memberListWithFullPhotoURL.filter((member) => {
-        return (
+      memberListWithFullPhotoURL = memberListWithFullPhotoURL.filter(
+        (member) =>
           member.name?.toLowerCase().includes(searchLower) ||
           member.ltsino?.toLowerCase().includes(searchLower) ||
           member.state?.toLowerCase().includes(searchLower) ||
@@ -87,11 +98,10 @@ const fetchMember = async (req, res) => {
           member.responsibilityWork?.some((r) =>
             r.role?.toLowerCase().includes(searchLower)
           )
-        );
-      });
+      );
     }
 
-    //  Send filtered response
+    // ✅ Final response
     return res.status(200).json({
       status: true,
       message: search
