@@ -130,13 +130,14 @@ const fetchDetail = async (req, res) => {
 
     const { userId, id } = req.body;
 
-    // 1. Validation
+    // 1️⃣ Validation
     if (!userId || !id) {
       return res.status(400).json({
         status: false,
         message: "userId and id are required",
       });
     }
+
     if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
@@ -144,23 +145,64 @@ const fetchDetail = async (req, res) => {
       });
     }
 
+    // 2️⃣ Fetch invited member
     const memberDetail = await prisma.invitedMember.findUnique({
-      where: {
-        id: Number(id),
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        name: true,
+        ltsino: true,
+        photo: true,
+        biodata: true,
+        email: true,
+        phone: true,
+        country: true,
+        state: true,
+        nights: true,
+        status: true,
+        createdOn: true,
       },
-      include: { responsibilityWork: true },
     });
+
     if (!memberDetail) {
       return res.status(404).json({
         status: false,
-        message: "Please provide valid Id",
+        message: "No invited member found with this ID",
       });
     }
 
+    // 3️⃣ Fetch their responsibility work (manual join)
+    const responsibilities = await prisma.responsibilityWork.findMany({
+      where: { invitedMemId: Number(id) },
+      select: {
+        id: true,
+        title: true,
+        role: true,
+        topic: true,
+        dateTime: true,
+        location: true,
+        genre: true,
+        theme: true,
+      },
+    });
+
+    // 4️⃣ Combine results
+    const fullMemberDetail = {
+      ...memberDetail,
+      photo: memberDetail.photo
+        ? `${BASE_URL_IMG}/photo/${memberDetail.photo}`
+        : null,
+      biodata: memberDetail.biodata
+        ? `${BASE_URL_IMG}/biodata/${memberDetail.biodata}`
+        : null,
+      responsibilityWork: responsibilities,
+    };
+
+    // 5️⃣ Send response
     return res.status(200).json({
       status: true,
       message: "Invited Member Detail fetched successfully",
-      data: memberDetail,
+      data: fullMemberDetail,
     });
   } catch (err) {
     console.error("fetch Invited Member Detail API error:", err.message || err);
@@ -170,5 +212,6 @@ const fetchDetail = async (req, res) => {
     });
   }
 };
+
 
 module.exports = { fetchMember, fetchDetail };
