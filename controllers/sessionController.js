@@ -1,5 +1,6 @@
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
+const moment = require("moment/moment");
 const prisma = new PrismaClient();
 
 const fetchSession = async (req, res) => {
@@ -38,9 +39,10 @@ const fetchSession = async (req, res) => {
     });
     console.log("eventDetails", events);
 
-    const formatted = events.map(({ EventDetail, ...rest }) => ({
+    const formatted = events.map(({ EventDetail, eventDate, ...rest }) => ({
       ...rest,
       eventDetail: EventDetail,
+      eventDate: moment(eventDate).format("Do MMM, YYYY"),
     }));
 
     console.log(formatted);
@@ -252,10 +254,15 @@ const rooms = async (req, res) => {
 const days = async (req, res) => {
   try {
     const dayslist = await prisma.days.findMany();
+    const formattedDays = dayslist.map((day) => ({
+      ...day,
+      formattedDate: moment(day.eventDate).format("Do MMM, YYYY"),
+    }));
+
     res.status(200).json({
       status: true,
       message: "Days fetched successfully",
-      data: dayslist,
+      data: formattedDays,
     });
   } catch (error) {
     console.error("Days fetch error:", error);
