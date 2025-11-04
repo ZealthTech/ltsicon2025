@@ -297,8 +297,8 @@ const signupSendOtp = async (req, res) => {
         userId: newUser.userId,
         email: newUser.email,
         otp: newUser.otp,
-        role: newUser.role?.name || null,
-        role: newUser.role?.id || null,
+        roleName: newUser.roleId?.name || null,
+        role: newUser.roleId?.id || null,
       },
     });
   } catch (err) {
@@ -366,8 +366,8 @@ const signupOtpVerify = async (req, res) => {
       user: {
         userId: updatedUser.userId,
         email: updatedUser.email,
-        role: updatedUser.role?.name || null,
-        role: updatedUser.role?.id || null,
+        roleName: updatedUser.roleId?.name || null,
+        role: updatedUser.roleId?.id || null,
       },
     });
   } catch (err) {
@@ -424,7 +424,7 @@ const signupForm = async (req, res) => {
     // 2. Find user (must exist & be verified already)
     const user = await prisma.user.findFirst({
       where: { email },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     if (!user) {
@@ -439,11 +439,11 @@ const signupForm = async (req, res) => {
       {
         userId: user.userId,
         email: user.email,
-        role: user.role?.name || null,
+        roleName: user.roleId?.name || null,
         firstName: user.firstName,
         lastName: user.lastName,
         phone: user.phone,
-        role: user.role,
+        role: user.roleId,
       },
       process.env.JWT_SECRET,
       { expiresIn: "180d" }
@@ -464,7 +464,7 @@ const signupForm = async (req, res) => {
         token,
         password: hashedPassword,
       },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     const LOGIN_URL = `https://ltsicon2025.com/login.php`;
@@ -555,12 +555,12 @@ const signupForm = async (req, res) => {
       user: {
         userId: updatedUser.userId,
         email: updatedUser.email,
-        role: updatedUser.role?.name || null,
+        roleName: updatedUser.roleId?.name || null,
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
         phone: updatedUser.phone,
         token,
-        role: updatedUser.role?.id || null,
+        role: updatedUser.roleId?.id || null,
         status: updatedUser.status,
       },
     });
