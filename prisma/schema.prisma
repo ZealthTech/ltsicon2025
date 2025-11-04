@@ -29,16 +29,17 @@ model User {
   medicalCouncilNumber String?         @db.VarChar(100)
   specialityDepartment String?         @db.VarChar(255)
   gender               String?         @db.VarChar(50)
+  city                 String?         @db.VarChar(100)
   country              String?         @db.VarChar(100)
+  address              String?         @db.VarChar(255)
   status               Int
   createdOn            DateTime        @default(now()) @db.Timestamp(0)
   otpExpiry            DateTime?       @db.DateTime(0)
-  roleId               Int?
+  role                 Int?
+  add_role             Int?            @default(0)
   lastLogin            DateTime?
   token                String?         @db.VarChar(1000)
   profileImage         String?         @db.VarChar(1000)
-  address              String?         @db.VarChar(100)
-  city                 String?         @db.VarChar(100)
   andLogin             Int?            @default(0)
   fcmAndToken          String?         @db.VarChar(1000)
   fcmIosToken          String?         @db.VarChar(1000)
@@ -47,10 +48,10 @@ model User {
   bookingDetails       BookingDetail[]
   bookings             Booking[]
   employments          Employment[]
-  role                 Role?           @relation(fields: [roleId], references: [id], map: "fk_users_roleId")
+  roleId               Role?           @relation(fields: [role], references: [id], map: "fk_users_roleId")
 
   @@index([status])
-  @@index([roleId])
+  @@index([role])
   @@index([lastName, firstName])
   @@map("users")
 }

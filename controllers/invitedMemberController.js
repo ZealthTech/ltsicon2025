@@ -130,7 +130,7 @@ const fetchDetail = async (req, res) => {
 
     const { userId, id } = req.body;
 
-    // 1️⃣ Validation
+    // Validation
     if (!userId || !id) {
       return res.status(400).json({
         status: false,
@@ -145,7 +145,7 @@ const fetchDetail = async (req, res) => {
       });
     }
 
-    // 2️⃣ Fetch invited member
+    // Fetch invited member
     const memberDetail = await prisma.invitedMember.findUnique({
       where: { id: Number(id) },
       select: {
@@ -171,7 +171,7 @@ const fetchDetail = async (req, res) => {
       });
     }
 
-    // 3️⃣ Fetch their responsibility work (manual join)
+    // Fetch their responsibility work (manual join)
     const responsibilities = await prisma.responsibilityWork.findMany({
       where: { invitedMemId: Number(id) },
       select: {
@@ -186,7 +186,7 @@ const fetchDetail = async (req, res) => {
       },
     });
 
-    // 4️⃣ Combine results
+    // Combine results
     const fullMemberDetail = {
       ...memberDetail,
       photo: memberDetail.photo
@@ -198,7 +198,7 @@ const fetchDetail = async (req, res) => {
       responsibilityWork: responsibilities,
     };
 
-    // 5️⃣ Send response
+    // Send response
     return res.status(200).json({
       status: true,
       message: "Invited Member Detail fetched successfully",

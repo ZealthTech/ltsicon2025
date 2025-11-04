@@ -52,7 +52,7 @@ const verifyToken = (allowedRoles = []) => {
         select: {
           userId: true,
           email: true,
-          roleId: true,
+          role: true,
           firstName: true,
           lastName: true,
         },
@@ -63,7 +63,7 @@ const verifyToken = (allowedRoles = []) => {
       }
 
       // Role check
-      if (allowedRoles.length > 0 && !allowedRoles.includes(user.roleId)) {
+      if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
         return res
           .status(403)
           .json({ message: "Forbidden - insufficient permissions" });
@@ -104,7 +104,7 @@ const refreshAccessToken = async (req, res) => {
     const newAccessToken = generateAccessToken({
       userId: decoded.userId,
       email: decoded.email,
-      roleId: decoded.roleId,
+      role: decoded.role,
       firstName: decoded.firstName,
       lastName: decoded.lastName,
       phone: decoded.phone,
@@ -134,7 +134,7 @@ const checkRoutePermission = () => {
       }
 
       // Use user info from verified JWT, NOT body
-      const { userId, roleId } = req.user;
+      const { userId, role } = req.user;
 
       const subadmin = await prisma.subadmin.findFirst({
         where: { userId: Number(userId) },
@@ -148,7 +148,7 @@ const checkRoutePermission = () => {
         });
       }
 
-      if (subadmin.user.roleId !== Number(roleId)) {
+      if (subadmin.user.role !== Number(role)) {
         return res.status(403).json({
           status: false,
           message: "Role mismatch for the given user.",

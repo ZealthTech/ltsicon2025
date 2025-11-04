@@ -45,7 +45,7 @@ const profileUpload = async (req, res) => {
 
     // Check if user exists
     const user = await prisma.user.findFirst({
-      where: { userId: Number(userId), roleId: Number(roleId) },
+      where: { userId: Number(userId), role: Number(roleId) },
     });
 
     if (!user) {

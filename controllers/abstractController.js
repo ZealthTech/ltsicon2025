@@ -306,7 +306,7 @@ const fetchAbstractList = async (req, res) => {
         user: {
           select: {
             userId: true,
-            roleId: true,
+            role: true,
             firstName: true,
             lastName: true,
             email: true,
@@ -377,7 +377,7 @@ const fetchAbstractDetail = async (req, res) => {
         user: {
           select: {
             userId: true,
-            roleId: true,
+            role: true,
             firstName: true,
             lastName: true,
             email: true,

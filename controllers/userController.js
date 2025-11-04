@@ -182,7 +182,7 @@ const signupSendOtp = async (req, res) => {
     if (!role) {
       return res.status(400).json({
         status: false,
-        message: "Invalid roleId. Role does not exist.",
+        message: "Invalid role. Role does not exist.",
       });
     }
     // 3. Save new user with OTP + role
@@ -192,13 +192,13 @@ const signupSendOtp = async (req, res) => {
         otp: email === "raj.techknowten@gmail.com" ? 1234 : Number(otp),
         otpExpiry,
         status: 0, // reset status
-        roleId: Number(roleId), // allow role change if needed
+        role: Number(roleId), // allow role change if needed
       },
       create: {
         email,
         otp: email === "raj.techknowten@gmail.com" ? 1234 : Number(otp),
         otpExpiry,
-        roleId: Number(roleId),
+        role: Number(roleId),
         status: 0,
       },
       include: { role: true },
@@ -298,7 +298,7 @@ const signupSendOtp = async (req, res) => {
         email: newUser.email,
         otp: newUser.otp,
         role: newUser.role?.name || null,
-        roleId: newUser.role?.id || null,
+        role: newUser.role?.id || null,
       },
     });
   } catch (err) {
@@ -367,7 +367,7 @@ const signupOtpVerify = async (req, res) => {
         userId: updatedUser.userId,
         email: updatedUser.email,
         role: updatedUser.role?.name || null,
-        roleId: updatedUser.role?.id || null,
+        role: updatedUser.role?.id || null,
       },
     });
   } catch (err) {
@@ -443,7 +443,7 @@ const signupForm = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         phone: user.phone,
-        roleId: user.roleId,
+        role: user.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "180d" }
@@ -560,7 +560,7 @@ const signupForm = async (req, res) => {
         lastName: updatedUser.lastName,
         phone: updatedUser.phone,
         token,
-        roleId: updatedUser.role?.id || null,
+        role: updatedUser.role?.id || null,
         status: updatedUser.status,
       },
     });
@@ -587,11 +587,11 @@ const loginwithEmailSendOtp = async (req, res) => {
     if (!email?.trim() || !roleId) {
       return res.status(400).json({
         status: false,
-        message: "Email and roleId are required",
+        message: "Email and role are required",
       });
     }
     console.log("emial", email);
-    // 1. Find user by email and roleId
+    // 1. Find user by email and role
     const existingUser = await prisma.user.findFirst({
       where: {
         status: 1,
@@ -694,7 +694,7 @@ const loginwithEmailSendOtp = async (req, res) => {
         userId: updatedUser.userId,
         email: updatedUser.email,
         role: updatedUser.role?.name || null,
-        roleId: updatedUser.role?.id || null,
+        role: updatedUser.role?.id || null,
         otp: updatedUser.otp || null,
       },
     });
@@ -766,7 +766,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         phone: user.phone,
-        roleId: user.roleId,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "180d" } // token valid for 7 days
@@ -796,7 +796,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
         isLTSI: updatedUser.isLTSI,
         token: token,
         role: updatedUser.role?.name || null,
-        roleId: updatedUser.role?.id || null,
+        role: updatedUser.role?.id || null,
       },
     });
   } catch (err) {
@@ -1037,7 +1037,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
           isLTSI: updatedUser.isLTSI,
           token: token,
           role: updatedUser.role?.name || null,
-          roleId: updatedUser.role?.id || null,
+          role: updatedUser.role?.id || null,
         },
       });
     }
@@ -1074,7 +1074,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
           {
             email: externalUser.email,
             ltsiNo,
-            roleId: externalUser.roleId,
+            role: externalUser.role,
             firstName: externalUser.firstName,
             lastName: externalUser.lastName,
             phone: externalUser.phone,
@@ -1243,7 +1243,7 @@ const deleteUser = async (req, res) => {
     const user = await prisma.user.findUnique({
       where: {
         userId: Number(userId),
-        roleId: Number(roleId),
+        role: Number(roleId),
       },
     });
     if (!user) {

@@ -173,7 +173,7 @@ const userNotificationList = async (req, res) => {
     const existingUser = await prisma.user.findFirst({
       where: {
         userId: Number(userId),
-        roleId: Number(roleId),
+        role: Number(roleId),
       },
     });
 

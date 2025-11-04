@@ -14,7 +14,7 @@ const homepage = async (req, res) => {
     if (!userId || !roleId) {
       return res.status(400).json({
         status: false,
-        message: "userId and roleId is required",
+        message: "userId and role is required",
       });
     }
 
@@ -83,7 +83,7 @@ const homepage = async (req, res) => {
     if (!userData) {
       //  Fetch user profile
       const userDataRaw = await prisma.user.findFirst({
-        where: { userId: Number(userId), roleId: Number(roleId), status: 1 },
+        where: { userId: Number(userId), role: Number(roleId), status: 1 },
       });
 
       if (!userDataRaw) {

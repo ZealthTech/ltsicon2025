@@ -73,7 +73,7 @@ const personalInfo = async (req, res) => {
     const updatedUser = await prisma.user.upsert({
       where: { email },
       update: {
-        roleId,
+        role: Number(roleId),
         firstName,
         lastName,
         email,
@@ -90,7 +90,7 @@ const personalInfo = async (req, res) => {
       },
       create: {
         userId: Number(userId),
-        roleId,
+        role :Number(roleId),
         firstName,
         lastName,
         email,

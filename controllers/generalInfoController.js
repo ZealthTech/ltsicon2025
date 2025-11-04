@@ -101,7 +101,7 @@ const getDetailById = async (req, res) => {
     if (!userId || !roleId || !id) {
       return res.status(400).json({
         status: false,
-        message: "userId and roleId are required",
+        message: "userId and role are required",
       });
     }
 

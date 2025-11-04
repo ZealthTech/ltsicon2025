@@ -164,7 +164,7 @@ const fetchAlbumList = async (req, res) => {
     }
     // Check if user exists
     const user = await prisma.user.findFirst({
-      where: { userId: Number(userId), roleId: Number(roleId) },
+      where: { userId: Number(userId), role: Number(roleId) },
     });
 
     if (!user) {
@@ -238,7 +238,7 @@ const fetchAlbumDetail = async (req, res) => {
     }
     // Verify user exists
     const user = await prisma.user.findFirst({
-      where: { userId: Number(userId), roleId: Number(roleId), status: 1 },
+      where: { userId: Number(userId), role: Number(roleId), status: 1 },
     });
 
     if (!user) {
@@ -310,7 +310,7 @@ const deleteAlbum = async (req, res) => {
     }
     // Verify user exists
     const user = await prisma.user.findFirst({
-      where: { userId: Number(userId), roleId: Number(roleId) },
+      where: { userId: Number(userId), role: Number(roleId) },
     });
     if (!user) {
       return res.status(401).json({
