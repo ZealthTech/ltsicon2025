@@ -587,7 +587,7 @@ const loginwithEmailSendOtp = async (req, res) => {
     if (!email?.trim() || !roleId) {
       return res.status(400).json({
         status: false,
-        message: "Email and role are required",
+        message: "Email and roleId are required",
       });
     }
     console.log("emial", email);
@@ -597,7 +597,7 @@ const loginwithEmailSendOtp = async (req, res) => {
         status: 1,
         email,
       },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     if (!existingUser) {
@@ -618,7 +618,7 @@ const loginwithEmailSendOtp = async (req, res) => {
         otp: email === "raj.techknowten@gmail.com" ? 1234 : Number(otp),
         otpExpiry,
       },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     // 4. Prepare HTML email
@@ -693,8 +693,8 @@ const loginwithEmailSendOtp = async (req, res) => {
       user: {
         userId: updatedUser.userId,
         email: updatedUser.email,
-        role: updatedUser.role?.name || null,
-        role: updatedUser.role?.id || null,
+        roleName: updatedUser.roleId?.name || null,
+        role: updatedUser.roleId?.id || null,
         otp: updatedUser.otp || null,
       },
     });
@@ -732,7 +732,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
         email,
         status: 1, // Ensure user is active
       },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     if (!user) {
@@ -762,11 +762,11 @@ const loginwithEmailOtpVerify = async (req, res) => {
       {
         userId: user.userId,
         email: email,
-        role: user.role?.name || null,
+        roleName: user.roleId?.name || null,
         firstName: user.firstName,
         lastName: user.lastName,
         phone: user.phone,
-        role: user.role,
+        role: user.roleId,
       },
       JWT_SECRET,
       { expiresIn: "180d" } // token valid for 7 days
@@ -779,7 +779,7 @@ const loginwithEmailOtpVerify = async (req, res) => {
         otp: null,
         otpExpiry: null,
       },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     return res.status(200).json({
@@ -795,8 +795,8 @@ const loginwithEmailOtpVerify = async (req, res) => {
         status: updatedUser.status,
         isLTSI: updatedUser.isLTSI,
         token: token,
-        role: updatedUser.role?.name || null,
-        role: updatedUser.role?.id || null,
+        roleName: updatedUser.roleId?.name || null,
+        role: updatedUser.roleId?.id || null,
       },
     });
   } catch (err) {
@@ -831,7 +831,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
         status: 1,
         LTSINumber: ltsiNo,
       },
-      include: { role: true },
+      include: { roleId: true },
     });
     console.log("existingUser", existingUser);
 
@@ -988,7 +988,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
         LTSINumber: ltsiNo,
         status: 1,
       },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     // 2. If found locally → verify OTP from DB
@@ -1009,7 +1009,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
 
       // Generate JWT
       const token = jwt.sign(
-        { userId: user.userId, role: user.role?.name },
+        { userId: user.userId, role: user.roleId?.name },
         process.env.JWT_SECRET,
         { expiresIn: "180d" }
       );
@@ -1018,7 +1018,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
       const updatedUser = await prisma.user.update({
         where: { userId: user.userId },
         data: { otp: null, otpExpiry: null },
-        include: { role: true },
+        include: { roleId: true },
       });
 
       return res.status(200).json({
@@ -1036,8 +1036,8 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
           status: updatedUser.status,
           isLTSI: updatedUser.isLTSI,
           token: token,
-          role: updatedUser.role?.name || null,
-          role: updatedUser.role?.id || null,
+          roleName: updatedUser.roleId?.name || null,
+          role: updatedUser.roleId?.id || null,
         },
       });
     }
@@ -1074,7 +1074,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
           {
             email: externalUser.email,
             ltsiNo,
-            role: externalUser.role,
+            role: externalUser.roleId,
             firstName: externalUser.firstName,
             lastName: externalUser.lastName,
             phone: externalUser.phone,
@@ -1139,7 +1139,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             LTSINumber: externalUser.ltsiNo,
             token,
           },
-          include: { role: true },
+          include: { roleId: true },
         });
         let employment = await prisma.employment.findFirst({
           where: { userId: savedUser.userId },
@@ -1189,7 +1189,7 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
             isLTSI: "Yes",
             token,
             ltsiNo: savedUser.LTSINumber,
-            role: savedUser.role?.name || "USER",
+            roleName: savedUser.roleId?.name || "USER",
           },
         });
       }

@@ -68,9 +68,7 @@ const fetchMember = async (req, res) => {
       // 3️⃣ Manually combine the data
       memberList = members.map((member) => ({
         ...member,
-        responsibilityWork: works.filter(
-          (w) => w.invitedMemId === member.id
-        ), // attach matching work items
+        responsibilityWork: works.filter((w) => w.invitedMemId === member.id), // attach matching work items
       }));
 
       // 4️⃣ Cache the combined result
@@ -212,6 +210,5 @@ const fetchDetail = async (req, res) => {
     });
   }
 };
-
 
 module.exports = { fetchMember, fetchDetail };
