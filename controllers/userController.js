@@ -201,7 +201,7 @@ const signupSendOtp = async (req, res) => {
         role: Number(roleId),
         status: 0,
       },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     // 4. Send OTP (placeholder)
