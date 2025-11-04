@@ -276,6 +276,7 @@ model AbsSubmission {
   createdOn            DateTime    @default(now()) @db.DateTime(0)
   submissionStatus     String?     @db.VarChar(5)
   abstractFile         String?     @db.VarChar(255)
+  rating               Float?
   authors              AbsAuthor[]
   user                 User?       @relation(fields: [userId], references: [userId], map: "fk_abs_submission_user")
 
