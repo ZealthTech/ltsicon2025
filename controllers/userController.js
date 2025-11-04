@@ -332,7 +332,7 @@ const signupOtpVerify = async (req, res) => {
     // 2. Find user by email
     const user = await prisma.user.findFirst({
       where: { email },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     if (!user || user.otp !== Number(otp)) {
@@ -357,7 +357,7 @@ const signupOtpVerify = async (req, res) => {
         otp: null,
         otpExpiry: null,
       },
-      include: { role: true },
+      include: { roleId: true },
     });
 
     return res.status(200).json({
