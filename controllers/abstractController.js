@@ -288,8 +288,8 @@ const fetchAbstractList = async (req, res) => {
         message: "userId is required",
       });
     }
-    console.log("req.user.userId",req.body.userId)
-    console.log("req.user.userId11",req.user.userId)
+    console.log("req.user.userId", req.body.userId);
+    console.log("req.user.userId11", req.user.userId);
     if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
@@ -300,6 +300,9 @@ const fetchAbstractList = async (req, res) => {
     const submission = await prisma.absSubmission.findMany({
       where: {
         userId: Number(userId),
+        status: {
+          not: 5,
+        },
       },
       include: {
         authors: true,

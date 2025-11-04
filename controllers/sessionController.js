@@ -3,6 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const moment = require("moment/moment");
 const prisma = new PrismaClient();
 
+//all session fetch
 const fetchSession = async (req, res) => {
   console.log("first");
   try {
@@ -33,10 +34,11 @@ const fetchSession = async (req, res) => {
 
     // Fetch all events with their sessions
     const events = await prisma.event.findMany({
+      orderBy: [{ eventDate: "asc" }, { sequence: "asc" }],
       include: {
         eventDetail: true,
         sessions: {
-          where: { userId: Number(userId) }, // Filter sessions for this specific user
+          where: { userId: Number(userId) },
         },
       },
     });
@@ -222,7 +224,7 @@ const speciality = async (req, res) => {
       "Hepatology",
       "Anesthesia & Critical Care",
       "Pediatric Hepatology",
-      "Interventional Radiology",
+      "Radiology/Interventional Radiology",
       "Miscellaneous",
       "Pathology",
     ];
