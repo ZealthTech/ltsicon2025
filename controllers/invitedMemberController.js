@@ -4,6 +4,22 @@ const prisma = new PrismaClient();
 const BASE_URL_IMG = process.env.BASE_URL_IMG_OLD;
 const nodeCache = require("../middleware/cache.js");
 
+const cleanName = (name) => {
+  if (!name || typeof name !== "string") return "";
+  return name
+    .split(",") // split by comma
+    .map(
+      (n) =>
+        n
+          .trim() // remove extra spaces
+          .replace(/^(Dr\.?|Prof\.?)\s+/i, "") // remove prefixes
+          .replace(/\s+/g, " ") // collapse multiple spaces
+          .replace(/\b\w/g, (char) => char.toUpperCase()) // capitalize words
+    )
+    .filter(Boolean) // remove empty strings
+    .join(", "); // join back together
+};
+
 const fetchMember = async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -142,17 +158,36 @@ const fetchDetail = async (req, res) => {
         message: "Invalid Token",
       });
     }
+    const formattedSearchName = name
+      ? name
+          .replace(/^(Dr\.?|Prof\.?)\s+/i, "")
+          .trim()
+          .toLowerCase()
+      : "";
 
+    const orFilters = [];
+
+    if (id) {
+      orFilters.push({ id: Number(id) });
+    }
+
+    if (formattedSearchName) {
+      orFilters.push({
+        name: {
+          contains: formattedSearchName,
+        },
+      });
+    }
+
+    if (orFilters.length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "Either ID or Name is required to search",
+      });
+    }
     // Fetch invited member
     const memberDetail = await prisma.invitedMember.findFirst({
-      where: {
-        OR: [
-          {
-            id: Number(id),
-          },
-          { name: name },
-        ],
-      },
+      where: { OR: orFilters },
       select: {
         id: true,
         name: true,
@@ -201,6 +236,7 @@ const fetchDetail = async (req, res) => {
         ? `${BASE_URL_IMG}biodata/${memberDetail.biodata}`
         : null,
       responsibilityWork: responsibilities,
+      formattedName: cleanName(memberDetail.name),
     };
 
     // Send response
