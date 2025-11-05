@@ -90,7 +90,7 @@ const personalInfo = async (req, res) => {
       },
       create: {
         userId: Number(userId),
-        role :Number(roleId),
+        role: Number(roleId),
         firstName,
         lastName,
         email,
@@ -683,7 +683,7 @@ const submitForm = async (req, res) => {
       where: { bookingId: Number(bookingId) },
       data: {
         screenShot: screenShotDB,
-        status: 4,
+        status: 0, // 0 for pending, 1 for approval, 2 for rejected
         updatedOn: new Date(),
       },
     });
@@ -734,7 +734,7 @@ const conferenceRegistrationInfo = async (req, res) => {
     const userData = await prisma.user.findFirst({
       where: {
         userId: Number(userId),
-        status: 1,
+        status: 1, // active users only
       },
       include: {
         bookings: {
@@ -803,7 +803,7 @@ const workshopList = async (req, res) => {
 
     // 3. Booking check
     const booking = await prisma.booking.findMany({
-      where: { userId: Number(userId) },
+      where: { userId: Number(userId), status: 1 },
       select: {
         bookingId: true,
         bookingNumber: true,

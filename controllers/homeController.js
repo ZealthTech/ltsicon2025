@@ -108,11 +108,10 @@ const homepage = async (req, res) => {
           memberTypeFee: { not: null },
         },
       });
-
+console.log("isRegis",registrations)
       let isRegistration = 0;
       let isPaymentDone = 0;
       if (registrations.length > 0) {
-        // existing logic: if any booking has status === 1 consider payment done? (keep original logic)
         const hasPaid = registrations.some((booking) => booking.status === 1);
         isRegistration = 1;
         isPaymentDone = hasPaid ? 1 : 0;
