@@ -71,24 +71,29 @@ const fetchSession = async (req, res) => {
 
         const formattedEventDetail = Array.isArray(eventDetail)
           ? eventDetail.map((detail) => ({
-              id: detail.id,
-              chairperson: cleanName(detail.chairpersons || detail.chairperson),
-              panelist: cleanName(detail.panelists || detail.panelist),
+              id: detail.eventDetailId,
+              eventId: detail.eventId,
+              startTime: detail.startTime,
+              endTime: detail.endTime,
+              genre: detail.genre,
+              topic: detail.topic,
+              panelist: cleanName(detail.panelists),
               moderator: cleanName(detail.moderator),
-              speaker: cleanName(detail.speakerName || detail.speaker),
+              speaker: cleanName(detail.speaker),
             }))
           : eventDetail
           ? {
-              id: eventDetail.id,
-              chairperson: cleanName(
-                eventDetail.chairpersons || eventDetail.chairperson
-              ),
+              id: eventDetail.eventDetailId,
+              eventId: eventDetail.eventId,
+              startTime: eventDetail.startTime,
+              endTime: eventDetail.endTime,
+              genre: eventDetail.genre,
+              topic: eventDetail.topic,
               panelist: cleanName(
-                eventDetail.panelists || eventDetail.panelist
+                eventDetail.panelists
               ),
               moderator: cleanName(eventDetail.moderator),
-              speaker: cleanName(
-                eventDetail.speakerName || eventDetail.speaker
+              speaker: cleanName(eventDetail.speaker
               ),
             }
           : null;
