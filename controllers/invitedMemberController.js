@@ -178,7 +178,7 @@ const fetchDetail = async (req, res) => {
 
     // Fetch their responsibility work (manual join)
     const responsibilities = await prisma.responsibilityWork.findMany({
-      where: { invitedMemId: memberDetail.id },
+      where: { invitedMemId: Number(memberDetail.id) },
       select: {
         id: true,
         title: true,
