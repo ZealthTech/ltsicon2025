@@ -126,13 +126,13 @@ const fetchDetail = async (req, res) => {
       });
     }
 
-    const { userId, id } = req.body;
+    const { userId, id, name } = req.body;
 
     // Validation
-    if (!userId || !id) {
+    if (!userId) {
       return res.status(400).json({
         status: false,
-        message: "userId and id are required",
+        message: "userId is required",
       });
     }
 
@@ -144,8 +144,15 @@ const fetchDetail = async (req, res) => {
     }
 
     // Fetch invited member
-    const memberDetail = await prisma.invitedMember.findUnique({
-      where: { id: Number(id) },
+    const memberDetail = await prisma.invitedMember.findFirst({
+      where: {
+        OR: [
+          {
+            id: Number(id),
+          },
+          { name: name },
+        ],
+      },
       select: {
         id: true,
         name: true,
@@ -171,7 +178,7 @@ const fetchDetail = async (req, res) => {
 
     // Fetch their responsibility work (manual join)
     const responsibilities = await prisma.responsibilityWork.findMany({
-      where: { invitedMemId: Number(id) },
+      where: { invitedMemId: memberDetail.id },
       select: {
         id: true,
         title: true,
@@ -188,10 +195,10 @@ const fetchDetail = async (req, res) => {
     const fullMemberDetail = {
       ...memberDetail,
       photo: memberDetail.photo
-        ? `${BASE_URL_IMG}/photo/${memberDetail.photo}`
+        ? `${BASE_URL_IMG}photo/${memberDetail.photo}`
         : null,
       biodata: memberDetail.biodata
-        ? `${BASE_URL_IMG}/biodata/${memberDetail.biodata}`
+        ? `${BASE_URL_IMG}biodata/${memberDetail.biodata}`
         : null,
       responsibilityWork: responsibilities,
     };
