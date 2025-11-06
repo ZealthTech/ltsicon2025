@@ -3,6 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
+
 const generateBookingNumber = async () => {
   let number;
   let exists = true;

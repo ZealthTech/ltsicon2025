@@ -2,6 +2,7 @@ require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
 const moment = require("moment/moment");
 const prisma = new PrismaClient();
+const he = require("iconv-lite");
 
 //all session fetch
 const fetchSession = async (req, res) => {
@@ -41,7 +42,7 @@ const fetchSession = async (req, res) => {
     });
 
     // Utility function to format a single name or comma-separated names
-    const cleanName = (name) => {
+    const skipPrefix = (name) => {
       if (!name || typeof name !== "string") return "";
       return name
         .split(",") // split by comma
@@ -56,15 +57,19 @@ const fetchSession = async (req, res) => {
         .filter(Boolean) // remove empty strings
         .join(", "); // join back together
     };
-
+    function repairEncoding(str = "") {
+      return he.decode(Buffer.from(str, "binary"), "utf8");
+    }
     const formatted = events.map(
       ({ eventDetail, sessions, eventDate, ...rest }) => {
+        console.log("HEH", repairEncoding(rest.title));
         const formattedEvent = {
           ...rest,
-          chairperson: cleanName(rest.chairpersons),
-          panelist: cleanName(rest.panelists),
-          moderator: cleanName(rest.moderator),
-          speaker: cleanName(rest.speakerName),
+          title: repairEncoding(rest.title),
+          chairperson: skipPrefix(rest.chairpersons),
+          panelist: skipPrefix(rest.panelists),
+          moderator: skipPrefix(rest.moderator),
+          speaker: skipPrefix(rest.speakerName),
           eventDate: moment(eventDate).format("Do MMM, YYYY"),
           isJoined: sessions.length > 0 ? 1 : 0,
         };
@@ -77,9 +82,9 @@ const fetchSession = async (req, res) => {
               endTime: detail.endTime,
               genre: detail.genre,
               topic: detail.topic,
-              panelist: cleanName(detail.panelists),
-              moderator: cleanName(detail.moderator),
-              speaker: cleanName(detail.speaker),
+              panelist: skipPrefix(detail.panelists),
+              moderator: skipPrefix(detail.moderator),
+              speaker: skipPrefix(detail.speaker),
             }))
           : eventDetail
           ? {
@@ -89,12 +94,9 @@ const fetchSession = async (req, res) => {
               endTime: eventDetail.endTime,
               genre: eventDetail.genre,
               topic: eventDetail.topic,
-              panelist: cleanName(
-                eventDetail.panelists
-              ),
-              moderator: cleanName(eventDetail.moderator),
-              speaker: cleanName(eventDetail.speaker
-              ),
+              panelist: skipPrefix(eventDetail.panelists),
+              moderator: skipPrefix(eventDetail.moderator),
+              speaker: skipPrefix(eventDetail.speaker),
             }
           : null;
 

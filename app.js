@@ -42,9 +42,10 @@ app.use(
 );
 // Set Content-Type headers based on file extensions
 const contentTypeMap = {
-  ".js": "application/javascript",
-  ".css": "text/css",
-  ".html": "text/html",
+  ".js": "application/javascript; charset=UTF-8",
+  ".css": "text/css; charset=UTF-8",
+  ".html": "text/html; charset=UTF-8",
+  ".json": "application/json; charset=UTF-8", // optional, for APIs
 };
 
 app.use((req, res, next) => {
@@ -54,6 +55,7 @@ app.use((req, res, next) => {
   }
   next();
 });
+
 
 // Sample route
 app.get("/", (req, res) => {
