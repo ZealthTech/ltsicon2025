@@ -335,6 +335,22 @@ model AbsAuthor {
   @@map("abs_author")
 }
 
+model abs_scoring {
+  scoringId     Int       @id @default(autoincrement())
+  submissionId  Int
+  novelty       String?   @db.VarChar(10)
+  relevance     String?   @db.VarChar(10)
+  originality   String?   @db.VarChar(10)
+  content       String?   @db.VarChar(10)
+  totalScore    String?   @db.VarChar(10)
+  scoreBy       Int?
+  isEval        Int       @default(1) // 1: yes, 0: decline
+  reason        String?
+  createdOn     DateTime  @default(now())
+
+  @@map("abs_scoring") // maps Prisma model to existing MySQL table
+}
+
 model Country {
   id       Int    @id @default(autoincrement())
   name     String @db.VarChar(100)
@@ -463,3 +479,4 @@ model rooms {
   seq        Int
   created_on DateTime @default(now()) @db.DateTime(0)
 }
+
