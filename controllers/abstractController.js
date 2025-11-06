@@ -269,7 +269,7 @@ const uploadAbstract = async (req, res) => {
       .json({ status: false, message: "Internal Server Error" });
   }
 };
-
+// my abstract list
 const fetchAbstractList = async (req, res) => {
   try {
     if (req.method !== "POST") {

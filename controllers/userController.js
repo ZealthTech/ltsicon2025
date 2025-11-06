@@ -1013,11 +1013,11 @@ const loginwithLtsiNumberOtpVerify = async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: "180d" }
       );
-
+      console.log("TOKEN", token);
       // Clear OTP
       const updatedUser = await prisma.user.update({
         where: { userId: user.userId },
-        data: { otp: null, otpExpiry: null },
+        data: { otp: null, otpExpiry: null, token },
         include: { roleId: true },
       });
 
