@@ -6,7 +6,7 @@ const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
 // TTLs in seconds
 const GLOBAL_TTL = 60 * 100; // 5 minutes
-const USER_TTL = 60 * 100;   // 2 minutes
+const USER_TTL = 60 * 100; // 2 minutes
 
 const homepage = async (req, res) => {
   try {
@@ -72,8 +72,20 @@ const homepage = async (req, res) => {
         icon: "https://con.bordersandbeyond.in/uploads/icons/general.png",
         label: "General Information",
       };
+      const conferenceAbstract = {
+        icon: "https://con.bordersandbeyond.in/uploads/icons/Abstract.png",
+        label: "Conference Abstract",
+      };
 
-      globalData = { banners, news, allSessionsObj, albumObj, speakersObj,generalInfo };
+      globalData = {
+        banners,
+        news,
+        allSessionsObj,
+        albumObj,
+        speakersObj,
+        generalInfo,
+        conferenceAbstract,
+      };
 
       // cache global data
       nodeCache.set(globalCacheKey, globalData, GLOBAL_TTL);
@@ -108,7 +120,7 @@ const homepage = async (req, res) => {
           memberTypeFee: { not: null },
         },
       });
-console.log("isRegis",registrations)
+      console.log("isRegis", registrations);
       let isRegistration = 0;
       let isPaymentDone = 0;
       if (registrations.length > 0) {
@@ -140,7 +152,9 @@ console.log("isRegis",registrations)
         where: { userId: Number(userId) },
         include: { bookingDetails: true },
       });
-      const workshopsList = bookingsWithWorkshops.flatMap((b) => b.bookingDetails || []);
+      const workshopsList = bookingsWithWorkshops.flatMap(
+        (b) => b.bookingDetails || []
+      );
       const workshopObj = {
         isWorkshop: workshopsList.length > 0 ? 1 : 0,
         list: workshopsList,
@@ -169,6 +183,7 @@ console.log("isRegis",registrations)
       globalData.albumObj,
       globalData.speakersObj,
       globalData.generalInfo,
+      globalData.conferenceAbstract,
     ];
 
     // Final response
