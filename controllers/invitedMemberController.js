@@ -67,7 +67,7 @@ const fetchMember = async (req, res) => {
       });
 
       if (!members || members.length === 0) {
-        return res.status(404).json({
+        return res.status(200).json({
           status: false,
           message: "No invited members found",
         });

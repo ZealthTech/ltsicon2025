@@ -35,7 +35,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 // Express route handler
-
 // update FCM
 const updateFCM = async (req, res) => {
   try {
@@ -1279,6 +1278,7 @@ const deleteUser = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   signupForm,
   signupSendOtp,
