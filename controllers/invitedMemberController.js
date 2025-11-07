@@ -65,7 +65,7 @@ const fetchMember = async (req, res) => {
           country: true,
         },
       });
-
+console.log("mememem",members)
       if (!members || members.length === 0) {
         return res.status(200).json({
           status: false,
@@ -205,9 +205,9 @@ const fetchDetail = async (req, res) => {
     });
 
     if (!memberDetail) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
-        message: "No invited member found with this ID",
+        message: "No invited member found ",
       });
     }
 
