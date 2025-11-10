@@ -281,6 +281,9 @@ const conferenceFees = async (req, res) => {
 const workshop = async (req, res) => {
   try {
     const workShopList = await prisma.workShop.findMany({
+      where:{
+        status:1
+      },
       orderBy: { workShop: "asc" },
     });
 
