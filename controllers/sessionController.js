@@ -76,18 +76,18 @@ const fetchSession = async (req, res) => {
 
         const formattedEventDetail = Array.isArray(eventDetail)
           ? eventDetail.map((detail) => ({
-              id: detail.eventDetailId,
-              eventId: detail.eventId,
-              startTime: detail.startTime,
-              endTime: detail.endTime,
-              genre: detail.genre,
-              topic: detail.topic,
-              panelist: skipPrefix(detail.panelists),
-              moderator: skipPrefix(detail.moderator),
-              speaker: skipPrefix(detail.speaker),
-            }))
+            id: detail.eventDetailId,
+            eventId: detail.eventId,
+            startTime: detail.startTime,
+            endTime: detail.endTime,
+            genre: detail.genre,
+            topic: detail.topic,
+            panelist: skipPrefix(detail.panelists),
+            moderator: skipPrefix(detail.moderator),
+            speaker: skipPrefix(detail.speaker),
+          }))
           : eventDetail
-          ? {
+            ? {
               id: eventDetail.eventDetailId,
               eventId: eventDetail.eventId,
               startTime: eventDetail.startTime,
@@ -98,7 +98,7 @@ const fetchSession = async (req, res) => {
               moderator: skipPrefix(eventDetail.moderator),
               speaker: skipPrefix(eventDetail.speaker),
             }
-          : null;
+            : null;
 
         return {
           ...formattedEvent,
@@ -268,6 +268,65 @@ const mySession = async (req, res) => {
     });
   }
 };
+const deleteSession = async (req, res) => {
+  console.log("ajjjja")
+  try {
+    if (req.method !== "DELETE") {
+      return res.status(405).json({
+        status: false,
+        message: "Method Not Allowed",
+      });
+    }
+    const { userId, eventId } = req.body;
+
+    if (!userId || !eventId) {
+      return res.status(400).json({
+        status: false,
+        message: "User ID and event ID are required",
+      });
+    }
+
+    if (Number(userId) !== req.user.userId) {
+      return res.status(403).json({
+        status: false,
+        message: "Invalid Token",
+      });
+    }
+
+    const existingSession = await prisma.chooseSession.findFirst({
+      where: {
+        userId: Number(userId),
+        eventId: Number(eventId),
+      },
+    });
+
+    if (!existingSession) {
+      return res.status(404).json({
+        status: false,
+        message: "Session not found or already deleted.",
+      });
+    }
+
+    await prisma.chooseSession.delete({
+      where: {
+        id: existingSession.id, // Assuming `id` is the primary key
+      },
+    });
+
+    console.log("Deleted session:", existingSession.id);
+
+    return res.status(200).json({
+      status: true,
+      message: "Session deleted successfully!",
+    });
+  } catch (error) {
+    console.error("Session delete error:", error);
+    return res.status(500).json({
+      status: false,
+      message: error.message || "Internal Server Error",
+    });
+  }
+};
 
 const speciality = async (req, res) => {
   try {
@@ -367,6 +426,7 @@ module.exports = {
   fetchSession,
   joinSession,
   mySession,
+  deleteSession,
   speciality,
   sessionList,
   rooms,

@@ -18,6 +18,12 @@ SESSION.post(
   JWT.verifyToken([3]),
   session.joinSession,
 );
+console.log("laaaaaa")
+SESSION.delete(
+  "/delete-session",
+  JWT.verifyToken([3]),
+  session.deleteSession,
+);
 SESSION.get(
   "/get-speciality",
   session.speciality,
