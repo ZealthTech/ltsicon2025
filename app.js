@@ -36,6 +36,7 @@ app.use("/uploads/qrcodeImages", express.static("uploads/qrcodeImages"));
 app.use("/uploads/albumImages", express.static("uploads/albumImages"));
 app.use("/uploads/thumbnails", express.static("uploads/thumbnails"));
 app.use("/uploads/generalInfo", express.static("uploads/generalInfo"));
+app.use("/uploads/Logo", express.static("uploads/Logo"));
 app.use(
   "/uploads/screenShots",
   express.static("uploads/screenShots")
