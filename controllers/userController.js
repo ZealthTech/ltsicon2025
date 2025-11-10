@@ -8,8 +8,8 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const nodemailer = require("nodemailer");
 const { downloadImage } = require("../middleware/download");
-const BASE_URL = process.env.BASE_URL;
-const LOGO = `${BASE_URL}/uploads/Logo/Logo.png`;
+const BASE_URL_IMG = process.env.BASE_URL_IMG;
+const LOGO = `${BASE_URL_IMG}/uploads/Logo/Logo.png`;
 const FROM_MAIL = process.env.FROM_MAIL;
 const MAIL_USER = process.env.MAIL_USER;
 const MAIL_PASS = process.env.MAIL_PASS;
@@ -17,7 +17,6 @@ const SUPPORT_MAIL = process.env.SUPPORT_MAIL;
 const MAIL_BCC = process.env.MAIL_BCC;
 const BASE_URL_LTSIMEMBER = process.env.BASE_URL_LTSIMEMBER;
 const BASE_URL_IMG_LTSIMEMBER = process.env.BASE_URL_IMG_LTSIMEMBER;
-const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
 function generateOtp() {
   return Math.floor(1000 + Math.random() * 9000).toString();
