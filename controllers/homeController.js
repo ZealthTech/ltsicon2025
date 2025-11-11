@@ -25,15 +25,15 @@ const homepage = async (req, res) => {
     }
 
     // Cache keys
-    const globalCacheKey = "homepage_global";
-    const userCacheKey = `homepage_user_${userId}`;
+    // const globalCacheKey = "homepage_global";
+    // const userCacheKey = `homepage_user_${userId}`;
 
     // Try to fetch cached global and user pieces
-    let globalData = nodeCache.get(globalCacheKey);
-    let userData = nodeCache.get(userCacheKey);
+    // let globalData = nodeCache.get(globalCacheKey);
+    // let userData = nodeCache.get(userCacheKey);
 
     // ---------- Global data (banners, news, static sections) ----------
-    if (!globalData) {
+
       // Fetch banners
       const bannersRaw = await prisma.banner.findMany({
         where: { status: 1 },
@@ -76,7 +76,7 @@ const homepage = async (req, res) => {
         label: "Session Synopsis (AI generated)",
       };
 
-      globalData = {
+    let  globalData = {
         banners,
         news,
         allSessionsObj,
@@ -87,11 +87,11 @@ const homepage = async (req, res) => {
       };
 
       // cache global data
-      nodeCache.set(globalCacheKey, globalData, GLOBAL_TTL);
-    }
+      // nodeCache.set(globalCacheKey, globalData, GLOBAL_TTL);
+    
 
     // ---------- User-specific data (profile, registrations, abstracts, workshops) ----------
-    if (!userData) {
+    
       //  Fetch user profile
       const userDataRaw = await prisma.user.findFirst({
         where: { userId: Number(userId), role: Number(roleId), status: 1 },
@@ -162,7 +162,7 @@ const homepage = async (req, res) => {
       };
 
       // Compose userData (sections will be assembled when responding)
-      userData = {
+    let userData = {
         user,
         registrationObj,
         abstractObj,
@@ -170,8 +170,8 @@ const homepage = async (req, res) => {
       };
 
       // cache per-user
-      nodeCache.set(userCacheKey, userData, USER_TTL);
-    }
+      // nodeCache.set(userCacheKey, userData, USER_TTL);
+  
 
     // ---------- Compose response sections (merge static + user-specific) ----------
     const sections = [
