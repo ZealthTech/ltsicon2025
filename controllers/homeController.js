@@ -74,7 +74,7 @@ const homepage = async (req, res) => {
       };
       const conferenceAbstract = {
         icon: "https://con.bordersandbeyond.in/uploads/icons/Abstract.png",
-        label: "Conference Abstract",
+        label: "Session Synopsis (AI generated)",
       };
 
       globalData = {

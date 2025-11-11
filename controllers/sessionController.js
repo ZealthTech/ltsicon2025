@@ -285,7 +285,7 @@ const deleteSession = async (req, res) => {
         message: "User ID and event ID are required",
       });
     }
-
+console.log("req.body",req.body)
     if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
@@ -306,7 +306,7 @@ const deleteSession = async (req, res) => {
         message: "Session not found or already deleted.",
       });
     }
-
+console.log("existing",existingSession)
     await prisma.chooseSession.delete({
       where: {
         id: existingSession.id, // Assuming `id` is the primary key

@@ -52,19 +52,23 @@ const fetchMember = async (req, res) => {
 
     if (!memberList) {
       // 1️⃣ Fetch all members
-      const members = await prisma.invitedMember.findMany({
-        where: { status: 1 },
-        select: {
-          id: true,
-          name: true,
-          ltsino: true,
-          photo: true,
-          biodata: true,
-          status: true,
-          state: true,
-          country: true,
-        },
-      });
+     const members = await prisma.$queryRaw`
+  SELECT 
+    id, name, ltsino, photo, biodata, status, state, country
+  FROM invited_member
+  WHERE status = 1
+  ORDER BY
+    LTRIM(
+      REPLACE(
+        REPLACE(
+          REPLACE(
+            REPLACE(LOWER(name), 'dr.', ''),
+          'dr ', ''),
+        'prof.', ''),
+      'prof ', '')
+    );
+`;
+
 console.log("mememem",members)
       if (!members || members.length === 0) {
         return res.status(200).json({
