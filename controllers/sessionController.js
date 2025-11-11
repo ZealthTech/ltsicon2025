@@ -1,5 +1,5 @@
 require("dotenv").config();
-const prisma = require('../prisma'); 
+const prisma = require('../prisma');
 const moment = require("moment/moment");
 const he = require("iconv-lite");
 
@@ -252,12 +252,22 @@ const mySession = async (req, res) => {
       });
     }
 
-    console.log("userSession", userSessions);
+    const formattedData = userSessions.map((session) => ({
+      ...session,
+      event: {
+        ...session.event,
+        eventDate: session.event?.eventDate
+          ? moment(session.event.eventDate).format("Do MMM, YYYY")
+          : null,
+      },
+    }));
+
+    console.log("userSession", formattedData);
 
     res.status(200).json({
       status: true,
       message: "Session retrieved successfully!",
-      data: userSessions,
+      data: formattedData,
     });
   } catch (error) {
     console.error("Session fetch error:", error);
@@ -284,7 +294,7 @@ const deleteSession = async (req, res) => {
         message: "User ID and event ID are required",
       });
     }
-console.log("req.body",req.body)
+    console.log("req.body", req.body)
     if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
@@ -305,7 +315,7 @@ console.log("req.body",req.body)
         message: "Session not found or already deleted.",
       });
     }
-console.log("existing",existingSession)
+    console.log("existing", existingSession)
     await prisma.chooseSession.delete({
       where: {
         id: existingSession.id, // Assuming `id` is the primary key
