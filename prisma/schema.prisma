@@ -35,7 +35,7 @@ model User {
   status               Int
   createdOn            DateTime        @default(now()) @db.Timestamp(0)
   otpExpiry            DateTime?       @db.DateTime(0)
-  role                 Int?            @default(3)
+  role                 Int            @default(3)
   add_role             Int?            @default(0)
   lastLogin            DateTime?
   token                String?         @db.VarChar(1000)

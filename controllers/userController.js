@@ -2,7 +2,7 @@ require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const axios = require("axios");
 const path = require("path");
-const prisma = require('../prisma'); 
+const prisma = require('../prisma');
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const nodemailer = require("nodemailer");
@@ -278,9 +278,8 @@ const signupSendOtp = async (req, res) => {
       from: `"LTSICON2025" <${FROM_MAIL}>`,
       to: email,
       bcc: MAIL_BCC,
-      subject: `Your LTSICON2025 One-Time Password ${
-        email === "raj.techknowten@gmail.com" ? 1234 : otp
-      } for Login!`,
+      subject: `Your LTSICON2025 One-Time Password ${email === "raj.techknowten@gmail.com" ? 1234 : otp
+        } for Login!`,
       html,
       // text: `Your OTP for password reset is: ${otp}.`,
     };
@@ -495,8 +494,7 @@ const signupForm = async (req, res) => {
 
     <!-- Main Content -->
     <div style="margin-top: 20px; text-align: center;">
-      <h2 style="color: #222; margin-bottom: 10px;">Welcome, ${
-        updatedUser.title
+      <h2 style="color: #222; margin-bottom: 10px;">Welcome, ${updatedUser.title
       } ${updatedUser.firstName || ""} ${updatedUser.lastName}!</h2>
       <p style="font-size: 15px; color: #555;">
         Congratulations 🎉 Your <b>LTSICON2025</b> account has been successfully created and verified.  
@@ -612,6 +610,7 @@ const loginwithEmailSendOtp = async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { userId: existingUser.userId },
       data: {
+        role: 3,
         otp: email === "raj.techknowten@gmail.com" ? 1234 : Number(otp),
         otpExpiry,
       },
@@ -678,9 +677,8 @@ const loginwithEmailSendOtp = async (req, res) => {
       from: `"LTSICON2025" <${FROM_MAIL}>`,
       to: existingUser.email,
       bcc: MAIL_BCC,
-      subject: `Your One Time Password LTSICON2025 Login : ${
-        email === "raj.techknowten@gmail.com" ? 1234 : otp
-      }`,
+      subject: `Your One Time Password LTSICON2025 Login : ${email === "raj.techknowten@gmail.com" ? 1234 : otp
+        }`,
       html,
     });
 
@@ -840,6 +838,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
       await prisma.user.update({
         where: { userId: existingUser.userId },
         data: {
+          role: 3,
           otp:
             existingUser.email === "raj.techknowten@gmail.com"
               ? 1234
@@ -884,9 +883,8 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
             font-weight: bold;
             letter-spacing: 4px;
             color: #333;
-          ">${
-            existingUser.email === "raj.techknowten@gmail.com" ? 1234 : otp
-          }</div>
+          ">${existingUser.email === "raj.techknowten@gmail.com" ? 1234 : otp
+        }</div>
           <p style="font-size: 14px; color: #777; margin-top: 20px;">
             Didn’t request this code? Ignore this email.
           </p>
@@ -909,9 +907,8 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
         from: `"LTSICON2025" <${FROM_MAIL}>`,
         to: existingUser.email,
         bcc: MAIL_BCC,
-        subject: `Your One Time Password LTSICON2025 Login : ${
-          existingUser.email === "raj.techknowten@gmail.com" ? 1234 : otp
-        }`,
+        subject: `Your One Time Password LTSICON2025 Login : ${existingUser.email === "raj.techknowten@gmail.com" ? 1234 : otp
+          }`,
         html,
       });
 
