@@ -35,7 +35,7 @@ model User {
   status               Int
   createdOn            DateTime        @default(now()) @db.Timestamp(0)
   otpExpiry            DateTime?       @db.DateTime(0)
-  role                 Int            @default(3)
+  role                 Int             @default(3)
   add_role             Int?            @default(0)
   lastLogin            DateTime?
   token                String?         @db.VarChar(1000)
@@ -211,6 +211,7 @@ model Booking {
   createdOn              DateTime        @default(now()) @db.Timestamp(0)
   updatedOn              DateTime?       @db.Timestamp(0)
   screenShot             String?         @db.Text
+  bookingFrom            Int             @default(2)   // 1 for App , 2 for Website 
   bookingDetails         BookingDetail[]
   user                   User            @relation(fields: [userId], references: [userId], map: "fk_bookings_user")
 

@@ -281,6 +281,7 @@ const conferenceInfo = async (req, res) => {
           memberTypeFee,
           accompanyingPersonName,
           accompanyingPersonfee,
+          bookingFrom:1,
           updatedOn: new Date(),
         },
       });
@@ -294,6 +295,7 @@ const conferenceInfo = async (req, res) => {
           memberTypeFee,
           accompanyingPersonName,
           accompanyingPersonfee,
+          bookingFrom:1,
           createdOn: new Date(),
         },
       });
@@ -397,6 +399,7 @@ const workshopInfo = async (req, res) => {
           data: {
             userId: Number(userId),
             bookingNumber,
+            bookingFrom:1,
             createdOn: new Date(),
           },
         });

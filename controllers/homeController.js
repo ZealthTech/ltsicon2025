@@ -119,7 +119,7 @@ const homepage = async (req, res) => {
           memberTypeFee: { not: null },
         },
       });
-      console.log("isRegis", registrations);
+      // console.log("isRegis", registrations);
       let isRegistration = 0;
       let isPaymentDone = 0;
       if (registrations.length > 0) {
