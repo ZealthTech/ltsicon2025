@@ -1,7 +1,6 @@
 require("dotenv").config();
-const { PrismaClient } = require("@prisma/client");
+const prisma = require('../prisma'); 
 const moment = require("moment/moment");
-const prisma = new PrismaClient();
 const he = require("iconv-lite");
 
 //all session fetch

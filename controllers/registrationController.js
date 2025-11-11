@@ -1,8 +1,6 @@
 require("dotenv").config();
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require('../prisma'); 
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
-
 
 const generateBookingNumber = async () => {
   let number;
@@ -354,22 +352,22 @@ const workshopInfo = async (req, res) => {
           : { userId: Number(userId), bookingId: Number(bookingId) },
     });
 
-    if (!booking)
-      return res
-        .status(400)
-        .json({ status: false, message: "No booking found for this user" });
+    // if (!booking)
+    //   return res
+    //     .status(400)
+    //     .json({ status: false, message: "No booking found for this user" });
 
     // 4. Payment check
-    if (
-      !booking.memberType ||
-      !booking.memberTypeFee ||
-      booking.memberTypeFee === "0"
-    ) {
-      return res.status(400).json({
-        status: false,
-        message: "Pay conference fee first to choose workshop",
-      });
-    }
+    // if (
+    //   !booking.memberType ||
+    //   !booking.memberTypeFee ||
+    //   booking.memberTypeFee === "0"
+    // ) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     message: "Pay conference fee first to choose workshop",
+    //   });
+    // }
 
     // 5. Insert workshops
     const bookingNumber = await generateBookingNumber();

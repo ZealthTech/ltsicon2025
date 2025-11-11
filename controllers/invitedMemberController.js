@@ -1,6 +1,5 @@
 require("dotenv").config();
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = require('../prisma'); 
 const BASE_URL_IMG = process.env.BASE_URL_IMG_OLD;
 const nodeCache = require("../middleware/cache.js");
 
@@ -52,7 +51,7 @@ const fetchMember = async (req, res) => {
 
     if (!memberList) {
       // 1️⃣ Fetch all members
-     const members = await prisma.$queryRaw`
+      const members = await prisma.$queryRaw`
   SELECT 
     id, name, ltsino, photo, biodata, status, state, country
   FROM invited_member
@@ -69,7 +68,7 @@ const fetchMember = async (req, res) => {
     );
 `;
 
-console.log("mememem",members)
+      console.log("mememem", members)
       if (!members || members.length === 0) {
         return res.status(200).json({
           status: false,
@@ -164,9 +163,9 @@ const fetchDetail = async (req, res) => {
     }
     const formattedSearchName = name
       ? name
-          .replace(/^(Dr\.?|Prof\.?)\s+/i, "")
-          .trim()
-          .toLowerCase()
+        .replace(/^(Dr\.?|Prof\.?)\s+/i, "")
+        .trim()
+        .toLowerCase()
       : "";
 
     const orFilters = [];
