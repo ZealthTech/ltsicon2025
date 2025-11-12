@@ -207,6 +207,72 @@ const joinSession = async (req, res) => {
   }
 };
 
+// const mySession = async (req, res) => {
+//   console.log("first");
+//   try {
+//     if (req.method !== "POST") {
+//       return res.status(405).json({
+//         status: false,
+//         message: "Method Not Allowed",
+//       });
+//     }
+
+//     const { userId, roleId } = req.body;
+
+//     if (!userId || !roleId) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "User ID and roleId are required",
+//       });
+//     }
+
+//     console.log("req.body", req.body);
+
+//     if (Number(userId) !== req.user.userId) {
+//       return res.status(403).json({
+//         status: false,
+//         message: "Invalid Token",
+//       });
+//     }
+
+//     // Find the user's session
+//     const userSessions = await prisma.chooseSession.findMany({
+//       where: {
+//         userId: Number(userId),
+//       },
+//       include: {
+//         event: true,
+//       },
+//     });
+
+//     if (!userSessions || userSessions.length === 0) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "No sessions found for this user.",
+//       });
+//     }
+
+//     const formattedData= {
+//       ...userSessions,
+//       eventDate: moment(eventDate).format("Do MMM, YYYY")
+//     }
+
+//     console.log("userSession", formattedData);
+
+//     res.status(200).json({
+//       status: true,
+//       message: "Session retrieved successfully!",
+//       data: formattedData,
+//     });
+//   } catch (error) {
+//     console.error("Session fetch error:", error);
+//     res.status(500).json({
+//       status: false,
+//       message: error.message || "Internal Server Error",
+//     });
+//   }
+// };
+
 const mySession = async (req, res) => {
   console.log("first");
   try {
@@ -241,7 +307,11 @@ const mySession = async (req, res) => {
         userId: Number(userId),
       },
       include: {
-        event: true,
+        event: {
+          include: {
+            eventDetail: true, // include all related eventDetail records
+          },
+        },
       },
     });
 
@@ -251,24 +321,19 @@ const mySession = async (req, res) => {
         message: "No sessions found for this user.",
       });
     }
+    const events = userSessions.map((session) => session.event);
 
-    const formattedData = userSessions.map((session) => ({
-      ...session,
-      event: {
-        ...session.event,
-        eventDate: session.event?.eventDate
-          ? moment(session.event.eventDate).format("Do MMM, YYYY")
-          : null,
-      },
+    const formattedData = events.map(event => ({
+      ...event,
+      eventDate: moment(event.eventDate).format("Do MMM, YYYY")
     }));
 
-    console.log("userSession", formattedData);
-
-    res.status(200).json({
+    return res.status(200).json({
       status: true,
       message: "Session retrieved successfully!",
-      data: formattedData,
+      data: formattedData
     });
+
   } catch (error) {
     console.error("Session fetch error:", error);
     res.status(500).json({
