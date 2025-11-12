@@ -1,5 +1,5 @@
 require("dotenv").config();
-const prisma = require('../prisma'); 
+const prisma = require('../prisma');
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
 const generateBookingNumber = async () => {
@@ -281,7 +281,6 @@ const conferenceInfo = async (req, res) => {
           memberTypeFee,
           accompanyingPersonName,
           accompanyingPersonfee,
-          bookingFrom:1,
           updatedOn: new Date(),
         },
       });
@@ -295,7 +294,6 @@ const conferenceInfo = async (req, res) => {
           memberTypeFee,
           accompanyingPersonName,
           accompanyingPersonfee,
-          bookingFrom:1,
           createdOn: new Date(),
         },
       });
@@ -324,14 +322,15 @@ const workshopInfo = async (req, res) => {
         .json({ status: false, message: "Method Not Allowed" });
     }
 
-    const { userId, bookingId, workshops = [] } = req.body; // workshops = array of { name, fee }
+    const { userId, bookingId, workshops = [] } = req.body; // workshops = array of { id, name, fee }
 
-    // 1. Validation
+    // 1️⃣ Validation
     if (!userId) {
       return res
         .status(400)
         .json({ status: false, message: "userId is required" });
     }
+
     if (Number(userId) !== req.user.userId) {
       return res.status(403).json({
         status: false,
@@ -339,14 +338,14 @@ const workshopInfo = async (req, res) => {
       });
     }
 
-    // 2. User check
+    // 2️⃣ User check
     const user = await prisma.user.findUnique({
       where: { userId: Number(userId) },
     });
     if (!user)
       return res.status(401).json({ status: false, message: "User not found" });
 
-    // 3. Booking check
+    // 3️⃣ Check if user already has a booking
     let booking = await prisma.booking.findFirst({
       where:
         Number(bookingId) === 0
@@ -354,30 +353,25 @@ const workshopInfo = async (req, res) => {
           : { userId: Number(userId), bookingId: Number(bookingId) },
     });
 
-    // if (!booking)
-    //   return res
-    //     .status(400)
-    //     .json({ status: false, message: "No booking found for this user" });
+    // 4️⃣ Fetch all workshops (for reference)
+    const workshopList = await prisma.workShop.findMany();
+    // 🧩 Restricted workshops — either hardcoded IDs or read dynamically from workshopList
+    // Example: workshopList.filter(w => w.requiresRegistration).map(w => w.id)
+    const restrictedWorkshops = [7]; // let’s say 7 is POCUS
 
-    // 4. Payment check
-    // if (
-    //   !booking.memberType ||
-    //   !booking.memberTypeFee ||
-    //   booking.memberTypeFee === "0"
-    // ) {
-    //   return res.status(400).json({
-    //     status: false,
-    //     message: "Pay conference fee first to choose workshop",
-    //   });
-    // }
-
-    // 5. Insert workshops
     const bookingNumber = await generateBookingNumber();
     let insertedWorkshops = [];
     let totalWorkshopFee = 0;
 
+    // 5️⃣ CASE 1: User already has a booking
     if (bookingId && bookingId > 0) {
-      // Existing bookingId provided
+      if (!booking) {
+        return res.status(404).json({
+          status: false,
+          message: "Booking not found for provided bookingId.",
+        });
+      }
+
       if (workshops.length > 0) {
         insertedWorkshops = await Promise.all(
           workshops.map(({ name, fee }) =>
@@ -391,15 +385,42 @@ const workshopInfo = async (req, res) => {
             })
           )
         );
+
+        totalWorkshopFee = workshops.reduce(
+          (sum, { fee }) => sum + Number(fee || 0),
+          0
+        );
       }
     } else {
-      // No bookingId -> create new booking first
+      // 6️⃣ CASE 2: No booking yet — new registration flow
       if (workshops.length > 0) {
+        // Extract selected workshop IDs from frontend
+        const selectedWorkshopIds = workshops.map((w) =>
+          Number(w.id ?? w.workShopId ?? -1)
+        );
+
+        // 💡 Now check against restricted workshops (this is where both lists matter)
+        const selectedRestricted = selectedWorkshopIds.filter((id) =>
+          restrictedWorkshops.includes(id)
+        );
+
+        if (selectedRestricted.length > 0) {
+          const restrictedNames = workshopList
+            .filter((w) => selectedRestricted.includes(w.workShopId))
+            .map((w) => w.name)
+            .join(", ");
+
+          return res.status(200).json({
+            status: false,
+            message: `Please ensure that you have completed registration before selecting the following workshop(s): ${restrictedNames || "Restricted Workshop(s)"}.`,
+          });
+        }
+
+        // ✅ Otherwise, safe to create booking
         booking = await prisma.booking.create({
           data: {
             userId: Number(userId),
             bookingNumber,
-            bookingFrom:1,
             createdOn: new Date(),
           },
         });
@@ -417,23 +438,21 @@ const workshopInfo = async (req, res) => {
           )
         );
 
-        // 6. Calculate total workshop fee
         totalWorkshopFee = workshops.reduce(
           (sum, { fee }) => sum + Number(fee || 0),
           0
         );
 
-        // 7. Update booking table with totalPayment
-        booking = await prisma.booking.update({
+        await prisma.booking.update({
           where: { bookingId: booking.bookingId },
           data: {
-            totalPayment: Number(totalWorkshopFee), // assuming `totalPayment` column exists
+            totalPayment: Number(totalWorkshopFee),
           },
         });
       }
     }
 
-    // 7. Response
+    // ✅ 7️⃣ Final Response
     return res.status(200).json({
       status: true,
       message:
@@ -444,11 +463,145 @@ const workshopInfo = async (req, res) => {
     });
   } catch (err) {
     console.error("Workshop info error:", err.message || err);
-    return res
-      .status(500)
-      .json({ status: false, message: "Internal Server Error" });
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
   }
 };
+
+// const workshopInfo = async (req, res) => {
+//   try {
+//     if (req.method !== "POST") {
+//       return res
+//         .status(405)
+//         .json({ status: false, message: "Method Not Allowed" });
+//     }
+
+//     const { userId, bookingId, workshops = [] } = req.body; // workshops = array of { name, fee }
+
+//     // 1. Validation
+//     if (!userId) {
+//       return res
+//         .status(400)
+//         .json({ status: false, message: "userId is required" });
+//     }
+//     if (Number(userId) !== req.user.userId) {
+//       return res.status(403).json({
+//         status: false,
+//         message: "Invalid Token",
+//       });
+//     }
+
+//     // 2. User check
+//     const user = await prisma.user.findUnique({
+//       where: { userId: Number(userId) },
+//     });
+//     if (!user)
+//       return res.status(401).json({ status: false, message: "User not found" });
+
+//     // 3. Booking check
+//     let booking = await prisma.booking.findFirst({
+//       where:
+//         Number(bookingId) === 0
+//           ? { userId: Number(userId) }
+//           : { userId: Number(userId), bookingId: Number(bookingId) },
+//     });
+
+//     // if (!booking)
+//     //   return res
+//     //     .status(400)
+//     //     .json({ status: false, message: "No booking found for this user" });
+
+//     // 4. Payment check
+//     // if (
+//     //   !booking.memberType ||
+//     //   !booking.memberTypeFee ||
+//     //   booking.memberTypeFee === "0"
+//     // ) {
+//     //   return res.status(400).json({
+//     //     status: false,
+//     //     message: "Pay conference fee first to choose workshop",
+//     //   });
+//     // }
+
+//     // 5. Insert workshops
+//     const bookingNumber = await generateBookingNumber();
+//     let insertedWorkshops = [];
+//     let totalWorkshopFee = 0;
+
+//     if (bookingId && bookingId > 0) {
+//       // Existing bookingId provided
+//       if (workshops.length > 0) {
+//         insertedWorkshops = await Promise.all(
+//           workshops.map(({ name, fee }) =>
+//             prisma.bookingDetail.create({
+//               data: {
+//                 user: { connect: { userId: booking.userId } },
+//                 booking: { connect: { bookingId: Number(bookingId) } },
+//                 workshop: name,
+//                 workshopFee: Number(fee),
+//               },
+//             })
+//           )
+//         );
+//       }
+//     } else {
+//       // No bookingId -> create new booking first
+//       if (workshops.length > 0) {
+//         booking = await prisma.booking.create({
+//           data: {
+//             userId: Number(userId),
+//             bookingNumber,
+//             createdOn: new Date(),
+//           },
+//         });
+
+//         insertedWorkshops = await Promise.all(
+//           workshops.map(({ name, fee }) =>
+//             prisma.bookingDetail.create({
+//               data: {
+//                 user: { connect: { userId: booking.userId } },
+//                 booking: { connect: { bookingId: booking.bookingId } },
+//                 workshop: name,
+//                 workshopFee: Number(fee),
+//               },
+//             })
+//           )
+//         );
+
+//         // 6. Calculate total workshop fee
+//         totalWorkshopFee = workshops.reduce(
+//           (sum, { fee }) => sum + Number(fee || 0),
+//           0
+//         );
+
+//         // 7. Update booking table with totalPayment
+//         booking = await prisma.booking.update({
+//           where: { bookingId: booking.bookingId },
+//           data: {
+//             totalPayment: Number(totalWorkshopFee), // assuming `totalPayment` column exists
+//           },
+//         });
+//       }
+//     }
+
+//     // 7. Response
+//     return res.status(200).json({
+//       status: true,
+//       message:
+//         insertedWorkshops.length > 0
+//           ? "Workshop(s) added successfully"
+//           : "No workshops provided",
+//       data: { insertedWorkshops, totalWorkshopFee },
+//     });
+//   } catch (err) {
+//     console.error("Workshop info error:", err.message || err);
+//     return res
+//       .status(500)
+//       .json({ status: false, message: "Internal Server Error" });
+//   }
+// };
 
 //step 5
 const accomodationInfo = async (req, res) => {
