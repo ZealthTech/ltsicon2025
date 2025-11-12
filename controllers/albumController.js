@@ -1,5 +1,6 @@
 require("dotenv").config();
-const prisma = require('../prisma'); 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
 
 const uploadAlbum = async (req, res) => {

@@ -1,5 +1,6 @@
 require("dotenv").config();
-const prisma = require('../prisma');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 const nodeCache = require("../middleware/cache.js");
 const BASE_URL_IMG = process.env.BASE_URL_IMG;
 

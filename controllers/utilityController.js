@@ -1,6 +1,6 @@
 require("dotenv").config();
-const prisma = require('../prisma'); 
-
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 const countryList = async (req, res) => {
   try {
     const countries = [
