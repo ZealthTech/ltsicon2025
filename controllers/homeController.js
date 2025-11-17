@@ -76,6 +76,10 @@ const homepage = async (req, res) => {
       icon: "https://con.bordersandbeyond.in/uploads/icons/Abstract.png",
       label: "Conference Abstract",
     };
+    const sessionSynopsis = {
+      icon: "https://con.bordersandbeyond.in/uploads/icons/synopsis.png",
+      label: "Session Synopsis (AI generated)",
+    };
 
     let globalData = {
       banners,
@@ -85,6 +89,7 @@ const homepage = async (req, res) => {
       speakersObj,
       generalInfo,
       conferenceAbstract,
+      sessionSynopsis
     };
 
     // cache global data
@@ -170,11 +175,6 @@ const homepage = async (req, res) => {
       workshopObj,
     };
 
-    // cache per-user
-    // nodeCache.set(userCacheKey, userData, USER_TTL);
-
-
-    // ---------- Compose response sections (merge static + user-specific) ----------
     const sections = [
       userData.registrationObj,
       userData.abstractObj,
@@ -184,6 +184,7 @@ const homepage = async (req, res) => {
       globalData.speakersObj,
       globalData.generalInfo,
       globalData.conferenceAbstract,
+      globalData.sessionSynopsis,
     ];
 
     // Final response
