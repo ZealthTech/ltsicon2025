@@ -48,7 +48,7 @@ const homepage = async (req, res) => {
     // Fetch news
     const newsRaw = await prisma.news.findMany({
       where: { status: 1 },
-      orderBy: { createdOn: "desc" },
+      orderBy: { sequence: "desc" },
     });
     const news = newsRaw.map((n) => ({
       ...n,
