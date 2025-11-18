@@ -219,18 +219,10 @@ const signupSendOtp = async (req, res) => {
   ">
     
     <!-- Header with Logo -->
-    <div style="
-      background-color: #b8eed6;
-      padding: 16px;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-      text-align: center;
-    ">
-      <img src="${LOGO}" alt="LTSICON2025 Logo" style="
-        max-width: 140px;
-        height: auto;
-      ">
-    </div>  
+   
+<tr>
+  <td colspan="2"><img src="https://ltsicon2025.com/images/Header_LTSICON.png" style="width:100%;"/></td>
+</tr> 
 
     <!-- Main Content -->
     <div style="margin-top: 20px; text-align: center;">
@@ -272,6 +264,9 @@ const signupSendOtp = async (req, res) => {
       <p>If you have any questions, contact us at <a href="mailto:${SUPPORT_MAIL}" style="color:#4CAF50;">${SUPPORT_MAIL}</a></p>
       <p style="margin-top: 10px;">Best regards,<br><b>LTSICON2025 Team</b></p>
     </div>
+    <tr>
+  <td colspan="2"><img src="https://ltsicon2025.com/images/Footer_LTSICON.png" style="width:100%;"/></td>
+</tr>
   </div>
 `;
 
@@ -480,18 +475,9 @@ const signupForm = async (req, res) => {
   ">
     
     <!-- Header with Logo -->
-    <div style="
-      background-color: #b8eed6;
-      padding: 16px;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-      text-align: center;
-    ">
-      <img src="${LOGO}" alt="LTSICON2025 Logo" style="
-        max-width: 140px;
-        height: auto;
-      ">
-    </div>  
+<tr>
+  <td colspan="2"><img src="https://ltsicon2025.com/images/Header_LTSICON.png" style="width:100%;"/></td>
+</tr> 
 
     <!-- Main Content -->
     <div style="margin-top: 20px; text-align: center;">
@@ -532,6 +518,9 @@ const signupForm = async (req, res) => {
       <p>If you have any questions, contact us at <a href="mailto:${SUPPORT_MAIL}" style="color:#4CAF50;">${SUPPORT_MAIL}</a></p>
       <p style="margin-top: 10px;">Best regards,<br><b>LTSICON2025 Team</b></p>
     </div>
+    <tr>
+  <td colspan="2"><img src="https://ltsicon2025.com/images/Footer_LTSICON.png" style="width:100%;"/></td>
+</tr>
   </div>
 `;
 
@@ -632,15 +621,9 @@ const loginwithEmailSendOtp = async (req, res) => {
         margin: 20px auto;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       ">
-        <div style="
-          background-color: #b8eed6;
-          padding: 16px;
-          border-top-left-radius: 12px;
-          border-top-right-radius: 12px;
-          text-align: center;
-        ">
-          <img src="${LOGO}" alt="LTSICON2025 Logo" style="max-width: 140px; height: auto;">
-        </div>
+      <tr>
+  <td colspan="2"><img src="https://ltsicon2025.com/images/Header_LTSICON.png" style="width:100%;"/></td>
+</tr>
         <div style="margin-top: 20px; text-align: center;">
           <h2 style="color: #222; margin-bottom: 10px;">Login OTP</h2>
           <p style="font-size: 15px; color: #555;">Use the OTP below to login. Valid for <b>10 minutes</b>.</p>
@@ -670,6 +653,9 @@ const loginwithEmailSendOtp = async (req, res) => {
           <p>If you have questions, contact us at <a href="mailto:${SUPPORT_MAIL}" style="color:#4CAF50;">${SUPPORT_MAIL}</a></p>
           <p style="margin-top: 10px;">Best regards,<br><b>LTSICON2025 Team</b></p>
         </div>
+        <tr>
+  <td colspan="2"><img src="https://ltsicon2025.com/images/Footer_LTSICON.png" style="width:100%;"/></td>
+</tr>
       </div>
     `;
 
@@ -861,15 +847,18 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
         margin: 20px auto;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       ">
-        <div style="
-          background-color: #b8eed6;
-          padding: 16px;
-          border-top-left-radius: 12px;
-          border-top-right-radius: 12px;
-          text-align: center;
-        ">
-          <img src="${LOGO}" alt="LTSICON2025 Logo" style="max-width: 140px; height: auto;">
-        </div>
+        // <div style="
+        //   background-color: #b8eed6;
+        //   padding: 16px;
+        //   border-top-left-radius: 12px;
+        //   border-top-right-radius: 12px;
+        //   text-align: center;
+        // ">
+        //   <img src="${LOGO}" alt="LTSICON2025 Logo" style="max-width: 140px; height: auto;">
+        // </div>
+        <tr>
+  <td colspan="2"><img src="https://ltsicon2025.com/images/Header_LTSICON.png" style="width:100%;"/></td>
+</tr>
         <div style="margin-top: 20px; text-align: center;">
           <h2 style="color: #222; margin-bottom: 10px;">Login OTP</h2>
           <p style="font-size: 15px; color: #555;">Use the OTP below to login. Valid for <b>10 minutes</b>.</p>
@@ -900,6 +889,9 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
           <p>If you have questions, contact us at <a href="mailto:${SUPPORT_MAIL}" style="color:#4CAF50;">${SUPPORT_MAIL}</a></p>
           <p style="margin-top: 10px;">Best regards,<br><b>LTSICON2025 Team</b></p>
         </div>
+        <tr>
+  <td colspan="2"><img src="https://ltsicon2025.com/images/Footer_LTSICON.png" style="width:100%;"/></td>
+</tr>
       </div>
     `;
 
