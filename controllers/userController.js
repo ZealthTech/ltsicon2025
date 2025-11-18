@@ -847,15 +847,7 @@ const loginwithLtsiNumberSendOtp = async (req, res) => {
         margin: 20px auto;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       ">
-        // <div style="
-        //   background-color: #b8eed6;
-        //   padding: 16px;
-        //   border-top-left-radius: 12px;
-        //   border-top-right-radius: 12px;
-        //   text-align: center;
-        // ">
-        //   <img src="${LOGO}" alt="LTSICON2025 Logo" style="max-width: 140px; height: auto;">
-        // </div>
+        
         <tr>
   <td colspan="2"><img src="https://ltsicon2025.com/images/Header_LTSICON.png" style="width:100%;"/></td>
 </tr>
