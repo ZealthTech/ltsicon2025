@@ -85,7 +85,7 @@ const homepage = async (req, res) => {
     const newsletter = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/Newsletter.png",
       label: "LTSI Newsletter",
-      link: "https://con.bordersandbeyond.in/uploads/icons/synopsis-ai.pdf"
+      link: "https://con.bordersandbeyond.in/uploads/icons/liver-newsletter-final.pdf"
     };
 
     let globalData = {
