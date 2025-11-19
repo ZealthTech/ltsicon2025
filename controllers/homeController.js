@@ -75,10 +75,16 @@ const homepage = async (req, res) => {
     const conferenceAbstract = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/Abstract.png",
       label: "Conference Abstract",
+      link: "https://con.bordersandbeyond.in/uploads/icons/synopsis-ai.pdf"
     };
     const sessionSynopsis = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/synopsis.png",
       label: "Session Synopsis (AI generated)",
+      link: "https://con.bordersandbeyond.in/uploads/icons/synopsis-ai.pdf"
+    };
+    const newsletter = {
+      icon: "https://con.bordersandbeyond.in/uploads/icons/Newsletter.png",
+      label: "LTSI Newsletter",
       link: "https://con.bordersandbeyond.in/uploads/icons/synopsis-ai.pdf"
     };
 
@@ -90,7 +96,8 @@ const homepage = async (req, res) => {
       speakersObj,
       generalInfo,
       conferenceAbstract,
-      sessionSynopsis
+      sessionSynopsis,
+      newsletter
     };
 
     // cache global data
@@ -186,6 +193,7 @@ const homepage = async (req, res) => {
       globalData.generalInfo,
       globalData.conferenceAbstract,
       globalData.sessionSynopsis,
+      globalData.newsletter,
     ];
 
     // Final response
