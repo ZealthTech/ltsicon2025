@@ -136,7 +136,7 @@ const personalInfo = async (req, res) => {
     // });
     return res.status(200).json({
       status: false,
-      message: "Unfortunately! Registration are Closed now.",
+      message: "Registration Closed.",
     });
   } catch (err) {
     console.error("personal info error:", err.message || err);
