@@ -129,10 +129,14 @@ const personalInfo = async (req, res) => {
       },
     });
 
-    return res.status(200).json({
+    // return res.status(200).json({
+    //   status: true,
+    //   message: "Personal Info saved successfully.",
+    //   user: updatedUser,
+    // });
+    return res.status(400).json({
       status: true,
-      message: "Personal Info saved successfully.",
-      user: updatedUser,
+      message: "Registration Closed",
     });
   } catch (err) {
     console.error("personal info error:", err.message || err);
