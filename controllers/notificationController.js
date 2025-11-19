@@ -25,7 +25,7 @@ const adminSendNotification = async (req, res) => {
 
     const { userId, roleId, title, desc, fcmUser } = req.body;
 
-    // 🧩 Validate incoming data
+    // Validate incoming data
     if (!userId || !roleId || !Array.isArray(fcmUser) || fcmUser.length === 0) {
       return res.status(400).json({
         status: false,
@@ -35,7 +35,7 @@ const adminSendNotification = async (req, res) => {
 
     console.log("📦 Payload received:", { userId, roleId, title, desc, fcmUser });
 
-    // 🧠 Fetch users’ FCM tokens from DB
+    // Fetch users’ FCM tokens from DB
     const users = await prisma.user.findMany({
       where: {
         userId: { in: fcmUser },
@@ -58,7 +58,7 @@ const adminSendNotification = async (req, res) => {
       });
     }
 
-    // 🧩 Collect valid tokens
+    // Collect valid tokens
     let tokens = [];
 
     users.forEach((user) => {
@@ -77,9 +77,9 @@ const adminSendNotification = async (req, res) => {
       });
     }
 
-    console.log(`🚀 Sending notification to ${tokens.length} devices...`);
+    console.log(` Sending notification to ${tokens.length} devices...`);
 
-    // 🧾 Push message template
+    // Push message template
     const pushMessage = {
       notification: {
         title: title,
@@ -93,7 +93,7 @@ const adminSendNotification = async (req, res) => {
 
     const maxRetries = 3;
 
-    // 🧨 Send notification with retry logic
+    // Send notification with retry logic
     for (const token of tokens) {
       let attempts = 0;
       let sentSuccessfully = false;
@@ -108,16 +108,16 @@ const adminSendNotification = async (req, res) => {
             ...pushMessage,
           });
 
-          console.log(`✅ Successfully sent to token: ${token}`);
+          console.log(` Successfully sent to token: ${token}`);
           sentSuccessfully = true;
         } catch (error) {
-          console.error(`❌ Error sending to ${token} (Attempt ${attempts}):`, error.message);
+          console.error(` Error sending to ${token} (Attempt ${attempts}):`, error.message);
           if (attempts < maxRetries) console.log("🔁 Retrying...");
         }
       }
 
       if (!sentSuccessfully) {
-        console.log(`⚠️ Failed to send notification after ${maxRetries} attempts for ${token}`);
+        console.log(` Failed to send notification after ${maxRetries} attempts for ${token}`);
       }
     }
     const notificationsToCreate = users.map((user) => ({
@@ -143,7 +143,7 @@ const adminSendNotification = async (req, res) => {
       data: users
     });
   } catch (error) {
-    console.error("🔥 Error in adminSendNotification:", error);
+    console.error(" Error in adminSendNotification:", error);
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",

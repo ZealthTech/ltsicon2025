@@ -79,6 +79,7 @@ const homepage = async (req, res) => {
     const sessionSynopsis = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/synopsis.png",
       label: "Session Synopsis (AI generated)",
+      link: "https://con.bordersandbeyond.in/uploads/icons/synopsis-ai.pdf"
     };
 
     let globalData = {
