@@ -477,13 +477,17 @@ const workshopInfo = async (req, res) => {
     }
 
     // 7. Response
+    // return res.status(200).json({
+    //   status: true,
+    //   message:
+    //     insertedWorkshops.length > 0
+    //       ? "Workshop(s) added successfully"
+    //       : "No workshops provided",
+    //   data: { insertedWorkshops, totalWorkshopFee },
+    // });
     return res.status(200).json({
-      status: true,
-      message:
-        insertedWorkshops.length > 0
-          ? "Workshop(s) added successfully"
-          : "No workshops provided",
-      data: { insertedWorkshops, totalWorkshopFee },
+      status: false,
+      message: "Registration Closed.",
     });
   } catch (err) {
     console.error("Workshop info error:", err.message || err);
