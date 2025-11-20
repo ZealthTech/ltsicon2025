@@ -120,6 +120,7 @@ model Event {
   dateRange     String          @db.VarChar(500)
   venue         String          @db.VarChar(500)
   noOfPeople    Int
+  isLive        Int             @default(0)
   eventId       Int             @id @default(autoincrement())
   speakerName   String          @db.Text
   overview      String?         @db.Text
