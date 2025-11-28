@@ -87,6 +87,11 @@ const homepage = async (req, res) => {
       label: "LTSI Newsletter",
       link: "https://con.bordersandbeyond.in/uploads/icons/liver-newsletter-final.pdf"
     };
+    const certificate = {
+      icon: "https://con.bordersandbeyond.in/uploads/icons/downloadC.png",
+      label: "Download Certificate",
+      link: "https://con.bordersandbeyond.in/uploads/icons/liver-newsletter-final.pdf"
+    };
 
     let globalData = {
       banners,
@@ -97,7 +102,8 @@ const homepage = async (req, res) => {
       generalInfo,
       conferenceAbstract,
       sessionSynopsis,
-      newsletter
+      newsletter,
+      certificate
     };
 
     // cache global data
@@ -194,6 +200,7 @@ const homepage = async (req, res) => {
       globalData.conferenceAbstract,
       globalData.sessionSynopsis,
       globalData.newsletter,
+      globalData.certificate,
     ];
 
     // Final response
