@@ -125,8 +125,10 @@ const fetchMember = async (req, res) => {
       message: search
         ? `Filtered results for "${search}" fetched successfully`
         : "Invited Member list fetched successfully",
-      count: memberListWithFullPhotoURL.length,
-      data: memberListWithFullPhotoURL,
+      count: 0,
+      data: [],
+      // count: memberListWithFullPhotoURL.length,
+      // data: memberListWithFullPhotoURL,
     });
   } catch (err) {
     console.error("fetch Invited Member Detail API error:", err.message || err);
