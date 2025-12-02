@@ -63,6 +63,7 @@ const homepage = async (req, res) => {
     const albumObj = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/album.png",
       label: "Photo Album",
+      link: "https://kwikpic-in.app.link/ejR05wDYBYb?groupCode=N98YDH&adminToken=N98YDH4nuGwXAM"
     };
     const speakersObj = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/Speaker.png",
@@ -90,7 +91,7 @@ const homepage = async (req, res) => {
     const certificate = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/downloadC.png",
       label: "Download Certificate",
-      link: "https://con.bordersandbeyond.in/uploads/icons/liver-newsletter-final.pdf"
+      link: "https://ltsicon2025.eventsservices.in/"
     };
 
     let globalData = {
