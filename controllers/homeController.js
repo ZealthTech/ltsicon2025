@@ -63,7 +63,7 @@ const homepage = async (req, res) => {
     const albumObj = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/album.png",
       label: "Photo Album",
-      link: "https://kwikpic-in.app.link/ejR05wDYBYb?groupCode=N98YDH&adminToken=N98YDH4nuGwXAM"
+      link: "https://kwikpic-in.app.link/e/PdCj4wDYBYb?uCode=*N19WD"
     };
     const speakersObj = {
       icon: "https://con.bordersandbeyond.in/uploads/icons/Speaker.png",
