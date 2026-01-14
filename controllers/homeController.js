@@ -57,39 +57,39 @@ const homepage = async (req, res) => {
 
     // static section icons (these rarely change, hence global)
     const allSessionsObj = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/session.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/session.png`,
       label: "Scientific Programs",
     };
     const albumObj = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/album.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/album.png`,
       label: "Photo Album",
       link: "https://kwikpic-in.app.link/e/PdCj4wDYBYb?uCode=*N19WD"
     };
     const speakersObj = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/Speaker.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/Speaker.png`,
       label: "Faculty & Speakers",
     };
     const generalInfo = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/general.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/general.png`,
       label: "General Information",
     };
     const conferenceAbstract = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/Abstract.png",
+      icon:`${BASE_URL_IMG}/uploads/icons/Abstract.png`,
       label: "Conference Abstract",
-      link: "https://con.bordersandbeyond.in/uploads/icons/synopsis-ai.pdf"
+      link: `${BASE_URL_IMG}/uploads/icons/synopsis-ai.pdf`
     };
     const sessionSynopsis = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/synopsis.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/synopsis.png`,
       label: "Session Synopsis (AI generated)",
       link: "https://ltsicon2025.groupthink.events/login"
     };
     const newsletter = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/Newsletter.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/Newsletter.png`,
       label: "LTSI Newsletter",
-      link: "https://con.bordersandbeyond.in/uploads/icons/liver-newsletter-final.pdf"
+      link: `${BASE_URL_IMG}/uploads/icons/liver-newsletter-final.pdf`
     };
     const certificate = {
-      icon: "https://con.bordersandbeyond.in/uploads/icons/downloadC.png",
+      icon:`${BASE_URL_IMG}/uploads/icons/downloadC.png`,
       label: "Download Certificate",
       link: "https://ltsicon2025.eventsservices.in/"
     };
@@ -152,7 +152,7 @@ const homepage = async (req, res) => {
     const registrationObj = {
       isRegistration,
       isPaymentDone,
-      icon: "https://con.bordersandbeyond.in/uploads/icons/Register.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/Register.png`,
       label: isRegistration === 1 ? "My Registration" : "Registration",
     };
 
@@ -163,7 +163,7 @@ const homepage = async (req, res) => {
     const abstractObj = {
       isAbstractSubmission: abstracts.length > 0 ? 1 : 0,
       list: abstracts,
-      icon: "https://con.bordersandbeyond.in/uploads/icons/submission.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/submission.png`,
       label: "My Abstracts",
     };
 
@@ -178,7 +178,7 @@ const homepage = async (req, res) => {
     const workshopObj = {
       isWorkshop: workshopsList.length > 0 ? 1 : 0,
       list: workshopsList,
-      icon: "https://con.bordersandbeyond.in/uploads/icons/workshop.png",
+      icon: `${BASE_URL_IMG}/uploads/icons/workshop.png`,
       label: "Workshop",
     };
 
