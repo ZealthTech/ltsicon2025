@@ -31,32 +31,32 @@ const getList = async (req, res) => {
     if (!generalData) {
       const welcome = {
         id: 1,
-        icon: "https://con.bordersandbeyond.in/uploads/generalInfo/About.png",
+        icon: `${BASE_URL_IMG}/uploads/generalInfo/About.png`,
         label: "Welcome Message",
       };
       const attend = {
         id: 2,
-        icon: "https://con.bordersandbeyond.in/uploads/generalInfo/committee.png",
+        icon: `${BASE_URL_IMG}/uploads/generalInfo/committee.png`,
         label: "Who should Attend",
       };
       const executive = {
         id: 3,
-        icon: "https://con.bordersandbeyond.in/uploads/generalInfo/council.png",
+        icon: `${BASE_URL_IMG}/uploads/generalInfo/council.png`,
         label: "LTSI Executive",
       };
       const venue = {
         id: 4,
-        icon: "https://con.bordersandbeyond.in/uploads/generalInfo/Venue.png",
+        icon: `${BASE_URL_IMG}/uploads/generalInfo/Venue.png`,
         label: "About the venue",
       };
       const delhi = {
         id: 5,
-        icon: "https://con.bordersandbeyond.in/uploads/generalInfo/session.png",
+        icon: `${BASE_URL_IMG}/uploads/generalInfo/session.png`,
         label: "About Delhi",
       };
       const events = {
         id: 6,
-        icon: "https://con.bordersandbeyond.in/uploads/generalInfo/event.png",
+        icon: `${BASE_URL_IMG}/uploads/generalInfo/event.png`,
         label: "Social Events",
       };
 
